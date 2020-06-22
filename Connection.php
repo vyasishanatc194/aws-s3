@@ -5,7 +5,11 @@ class Connection {
 
     static function connectDB()
     {
-        $conn = new mysqli(HOST, USERNAME, PASSWORD, DATABASE) or die("Connect failed: %s\n". $conn->error);
+
+        shell_exec("ssh -fNg -L HOST:3306 bitnami@inspectra.org");
+        $conn = new mysqli(HOST, USERNAME, PASSWORD, DATABASE);
+
+        // $conn = new mysqli(HOST, USERNAME, PASSWORD, DATABASE) or die("Connect failed: %s\n". $conn->error);
             
         return $conn;
             

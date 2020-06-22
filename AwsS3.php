@@ -20,7 +20,10 @@ class AwsS3 {
         ]);
     }
 
-    static function getListOfBuckets($bucket = null)
+    /**
+     * @param bucket
+     */
+    static function getListOfBuckets($bucket = null, $prefix = '')
     {
         // Use the plain API (returns ONLY up to 1000 of your objects).
         if (!$bucket) {
@@ -31,17 +34,28 @@ class AwsS3 {
         try {            
             $objects = $s3->listObjects([
                 'Bucket' => $bucket,
+                'Prefix' => $prefix
             ]);
-            foreach ($objects['Contents']  as $object) {
-                $res[] = $object['Key'] . PHP_EOL;
+            if (isset($objects['Contents'])) {
+                foreach ($objects['Contents']  as $object) {
+                    $res[] = $object['Key'] . PHP_EOL;
+                }
             }
-            
+
+            if (empty($res)) {
+                AwsS3::createFolder($prefix, $bucket, true);
+            }
+
             return $res;
         } catch (S3Exception $e) {
             echo $e->getMessage() . PHP_EOL;
         }
     }
 
+    /**
+     * @param ref
+     * @param dirs
+     */
     static function nest_dir( $ref, $dirs ) {
         $dirs = array_filter( $dirs );
         foreach( $dirs as $index => $dir ) {
@@ -57,6 +71,11 @@ class AwsS3 {
         return $ref;
     }
 
+    /**
+     * @param file_name
+     * @param folder_name
+     * @param bucket
+     */
     static function uploadFile($file_name = null, $folder_name = null, $bucket = null)
     {
         // Use the plain API (returns ONLY up to 1000 of your objects).
@@ -70,13 +89,12 @@ class AwsS3 {
             return 'Please enter folder name';
         }
         $s3 = AwsS3::connect();
-        try {
-            // $file_name = 'testFile.txt';
         
+        try {        
             $result = $s3->putObject([
                 'Bucket' => $bucket,
-                'Key'    => $folder_name.$file_name,
-                'Body' => fopen($file_name, 'r+')
+                'Key'    => $folder_name.$file_name['name'],
+                'Body' => fopen($file_name['tmp_name'], 'r+')
             ]);
 
             if ($result) {
@@ -102,7 +120,11 @@ class AwsS3 {
         } 
     }
 
-    static function createFolder($folder_name = null, $bucket = null)
+    /**
+     * @param folder_name
+     * @param bucket
+     */
+    static function createFolder($folder_name = null, $bucket = null, $flag = false)
     {
         // Use the plain API (returns ONLY up to 1000 of your objects).
         if (!$bucket) {
@@ -113,6 +135,7 @@ class AwsS3 {
         }
         $s3 = AwsS3::connect();
         try {
+            if ($flag) { }
         
             $result = $s3->putObject([
                 'Bucket' => $bucket,
@@ -125,6 +148,9 @@ class AwsS3 {
                 $res = $result['@metadata'];
                 $res = $res['statusCode'];
                 if ($res == 200) {
+                    if ($flag) {
+                        AwsS3::getListOfBuckets($bucket, $folder_name);
+                    }
                     return [
                         'statusCode' => $res,
                         'msg'=>'Folder Created Successfully',
@@ -144,6 +170,11 @@ class AwsS3 {
         }
     }
 
+    /**
+     * @param file_name
+     * @param folder_name
+     * @param bucket
+     */
     static function deleteFile($file_name = null, $folder_name = null, $bucket = null)
     {
         // Use the plain API (returns ONLY up to 1000 of your objects).
@@ -184,8 +215,3 @@ class AwsS3 {
         }
     }
 }
-// $res = AwsS3::getListOfBuckets(AWS_S3_BUCKET);
-// $res = AwsS3::deleteFile('testFile.txt');
-// $res = AwsS3::uploadFile('testFile.txt');
-// $res = AwsS3::createFolder('pictures1/', AWS_S3_BUCKET);
-// var_dump($res);

@@ -1,16 +1,21 @@
 <?php
-
 require 'AwsS3.php';
 require 'Action.php';
 
 class Magic {
 
     /**
-     * @params folder name
-     * @params bucket
+     * @param folder_name
+     * @param bucket
      */
     static function createFolderCB($folder_name, $bucket) {
 
+        if (!$bucket) {
+            return 'Please enter bucket name';
+        }
+        if (!$folder_name) {
+            return 'Please enter folder name';
+        }
         $res = AwsS3::createFolder($folder_name, $bucket);
         if ($res['statusCode'] == 200) {
             $status = 1;
@@ -21,9 +26,9 @@ class Magic {
     }
 
     /**
-     * @params file name
-     * @params folder name
-     * @params bucket
+     * @param file_name
+     * @param folder_name
+     * @param bucket
      */
     static function createFileCB($file_name, $folder_name, $bucket) {
 
@@ -37,11 +42,12 @@ class Magic {
     }
 
     /**
-     * @params bucket
+     * @param bucket
+     * @param userId
      */
-    static function getAllFolderCB($bucket) {
+    static function getAllFolderCB($bucket, $prefix) {
 
-        $res = AwsS3::getListOfBuckets($bucket);
+        $res = AwsS3::getListOfBuckets($bucket, $prefix);
         return $res;
     }
 
@@ -70,28 +76,7 @@ class Magic {
                         $resArr1['public'][] = $val;
                     }
                 }
-            }
-            // $a = explode("/", $val);
-            // $k = 0;       
-            // foreach($a as $Akey=>$Aval) {
-                // $Aval = $Aval;
-                // if (!strpos($a[$k], ".")) {
-                //     $Aval = $Aval.'/';
-                // }
-                // if (trim($Aval) !== "") {
-                //     if (strpos($Aval, "/") > 0 && $k >= 1) {
-                //         $resArr[$a[$k-1]][] = $a[$k];
-                //     }
-                // }                
-                // if (trim($Aval) !== "") {
-                //     if (strpos($Aval, ".") > 0) {
-                //         // $resArr1[$key][$k][] = trim($Aval);
-                //     } else {
-                //         $resArr1[$key][$k] = trim($Aval);
-                //     }
-                // }
-                // $k++;
-            // }            
+            }         
         }
         return $resArr1;
     }
@@ -99,9 +84,93 @@ class Magic {
 
 if (!empty($_REQUEST) && !empty($_REQUEST['newfoldername'])) {
     
-    $newFoldeName = $_REQUEST['newfoldername'];
+    $newFolderName = $_REQUEST['newfoldername'];
     $bucket = $_REQUEST['bucket'];
-    $resposne = Magic::createFolderCB($newFoldeName, $bucket);
-    return $resposne;
+    $response = Magic::createFolderCB($newFolderName, $bucket);
+    if ($response['success']) {
+        $folderNameArr = explode("/", $newFolderName);
+        $html = '';
+        // $newResposne = Magic::getAllFolderCB($bucket, $newFolderName);
+        $html .= '<form action="Magic.php" method="POST" enctype="multipart/form-data">';
+        $html .= '<label for="destination">';
+        $html .= '<i class="fa fa-folder-open" style="margin: 0 10px;"></i><input type="radio" value="'.$newFolderName.'" id="destination" name="destination" selected />';
+        $html .= $folderNameArr[count($folderNameArr)-2].'</label> <br/>';
+        $html .= '<input type="file" name="upload_file" class="upload_file" /> <br/>';
+        $html .= '<button type="submit" name="upload_file_btn" id="upload_file_btn">Upload File</button>';
+        $html .= '</form>';
+        // if (count($resposne) == 1) {
+            
+        // } else {
+        //     $html .= '<ul>';
+        //     foreach ($resposne as $key=>$val) {
+        //         $valArray = explode("/", $val);
+        //         $class = "child_folder";
 
+        //         if ($key == 0) {
+        //             $class = "root_folder";
+        //         }
+
+        //         $html .= '<li>';
+        //         $html .= '<label for="'.$class.'">';
+        //         $html .= '<input type="radio" id="'.$class.'" name="child_folder" class="'.$class.'" value="'.$val.'" /> ';
+        //         $html .= $valArray[count($valArray) - 2].'</label>';
+        //         $html .= '</li>';          
+        //     }
+        //     $html .= '</ul>';
+        // }
+        echo $html; die;
+    } else {
+        echo $response['msg'];
+    }
+    die;
+}
+
+if (!empty($_REQUEST) && !empty($_REQUEST['root'])) {
+    
+    $rootFolder = $_REQUEST['root'];
+    $bucket = $_REQUEST['bucket'];
+    $resposne = Magic::getAllFolderCB($bucket, $rootFolder);
+    $html = '';
+    $html .= '<input type="text" placeholder="Create a new folder" name="folder_name" class="folder_name" /> ';
+    $html .= '<button type="button" name="create_folder" id="create_folder">Create a New Folder</button>';
+    // if (count($resposne) == 1) {
+        
+    // } else {
+    //     $html .= '<ul>';
+    //     foreach ($resposne as $key=>$val) {
+    //         $valArray = explode("/", $val);
+    //         $class = "child_folder";
+
+    //         if ($key == 0) {
+    //             $class = "root_folder";
+    //         }
+
+    //         $html .= '<li>';
+    //         $html .= '<label for="'.$class.'">';
+    //         $html .= '<input type="radio" id="'.$class.'" name="child_folder" class="'.$class.'" value="'.$val.'" /> ';
+    //         $html .= $valArray[count($valArray) - 2].'</label>';
+    //         $html .= '</li>';            
+    //     }
+    //     $html .= '</ul>';
+    // }
+    echo $html; die;
+
+}
+
+if (!empty($_REQUEST) && !empty($_REQUEST['destination'])) {
+    
+    $destination = $_REQUEST['destination'];
+    $bucket = AWS_S3_BUCKET;
+    $fileName = $_FILES['upload_file'];
+    $response = Magic::createFileCB($fileName, $destination, $bucket);
+    if ($response['success']) {
+        header('Location:'.BASEURL);
+        // $fileNameArr = explode("/", $desctination);
+        $html = '';
+        print_r($response);
+        echo $html; die;
+    } else {
+        echo $response['msg'];
+    }
+    die;
 }
