@@ -91,13 +91,12 @@ if (!empty($_REQUEST) && !empty($_REQUEST['newfoldername'])) {
         $folderNameArr = explode("/", $newFolderName);
         $html = '';
         // $newResposne = Magic::getAllFolderCB($bucket, $newFolderName);
-        $html .= '<form action="Magic.php" method="POST" enctype="multipart/form-data">';
         $html .= '<label for="destination">';
         $html .= '<i class="fa fa-folder-open" style="margin: 0 10px;"></i><input type="radio" value="'.$newFolderName.'" id="destination" name="destination" selected />';
         $html .= $folderNameArr[count($folderNameArr)-2].'</label> <br/>';
-        $html .= '<input type="file" name="upload_file" class="upload_file" /> <br/>';
-        $html .= '<button type="submit" name="upload_file_btn" id="upload_file_btn">Upload File</button>';
-        $html .= '</form>';
+        $html .= '<input type="file" id="fileUpload" /> <br/>';
+        $html .= '<button type="button" id="upload">Upload File</button> <br/>';
+        $html .= '<progress max=”100” value=”0”></progress>';
         // if (count($resposne) == 1) {
             
         // } else {
@@ -163,6 +162,24 @@ if (!empty($_REQUEST) && !empty($_REQUEST['destination'])) {
     $bucket = AWS_S3_BUCKET;
     $fileName = $_FILES['upload_file'];
     $response = Magic::createFileCB($fileName, $destination, $bucket);
+    if ($response['success']) {
+        header('Location:'.BASEURL);
+        // $fileNameArr = explode("/", $desctination);
+        $html = '';
+        print_r($response);
+        echo $html; die;
+    } else {
+        echo $response['msg'];
+    }
+    die;
+}
+
+if (!empty($_REQUEST) && !empty($_REQUEST['destinationDir'])) {
+    
+    $destinationDir = $_REQUEST['destinationDir'];
+    $bucket = AWS_S3_BUCKET;
+    $fileName = $_REQUEST['uploadedFile'];
+    $response = Magic::createFileCB($fileName, $destinationDir, $bucket);
     if ($response['success']) {
         header('Location:'.BASEURL);
         // $fileNameArr = explode("/", $desctination);

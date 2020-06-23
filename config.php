@@ -7,16 +7,17 @@
 // secret access key "ih1o3blgGsTB9YqVhheHpRHo9lgoBHuWti+EEyjU"
 
 // client credentials
-define('AWS_S3_KEY', 'AKIAZMXQRZ3QJ5VV7NWJ');
-define('AWS_S3_SECRET', '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');
+// define('AWS_S3_KEY', 'AKIAZMXQRZ3QJ5VV7NWJ');
+// define('AWS_S3_SECRET', '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');
 
 // my credentials
-// define('AWS_S3_KEY', 'AKIAJKHLCJCOTFVB2V2Q');
-// define('AWS_S3_SECRET', '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');
+define('AWS_S3_KEY', 'AKIAJKHLCJCOTFVB2V2Q');
+define('AWS_S3_SECRET', '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');
 define('AWS_S3_REGION', 'us-east-1');
 define('AWS_S3_VERSION', 'latest');
 // define('AWS_S3_BUCKET', 'qaehs.in');
 define('AWS_S3_BUCKET', 'testdomain');
+define('IdentityPoolId', 'us-east-1:c3b1d9a2-47b3-4f2a-9483-8c383529e2d5');
 
 // database details
 define('HOST', 'localhost');

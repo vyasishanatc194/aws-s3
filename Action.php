@@ -15,7 +15,7 @@ class Action {
 
         $arr = explode("/", $folder_name);
         
-        $MyParam = '@CRUD_CREATE'; // idFolder
+        // $MyParam = '@CRUD_CREATE'; // idFolder
         $MyParam0 = $arr[count($arr)-2]; // idFolder
         $MyParam1 = $arr[count($arr)-2]; // folderName
         $MyParam2 = ''; // idProject
@@ -24,28 +24,28 @@ class Action {
         $MyParam5 = $status; // status
         $MyParam6 = $ObjectURL; // folderLink
 
-        // mysqli_query($MyConnection ,"SET @p0='".$MyParam0."'");
-        // mysqli_query($MyConnection ,"SET @p1='".$MyParam1."'");
-        // mysqli_query($MyConnection ,"SET @p2='".$MyParam2."'");
-        // mysqli_query($MyConnection ,"SET @p3='".$MyParam3."'");
-        // mysqli_query($MyConnection ,"SET @p4='".$MyParam4."'");
-        // mysqli_query($MyConnection ,"SET @p5='".$MyParam5."'");
-        // mysqli_query($MyConnection ,"SET @p6='".$MyParam6."'");
+        mysqli_query($MyConnection ,"SET @p0='".$MyParam0."'");
+        mysqli_query($MyConnection ,"SET @p1='".$MyParam1."'");
+        mysqli_query($MyConnection ,"SET @p2='".$MyParam2."'");
+        mysqli_query($MyConnection ,"SET @p3='".$MyParam3."'");
+        mysqli_query($MyConnection ,"SET @p4='".$MyParam4."'");
+        mysqli_query($MyConnection ,"SET @p5='".$MyParam5."'");
+        mysqli_query($MyConnection ,"SET @p6='".$MyParam6."'");
 
-        mysqli_query($MyConnection ,"SET par_CRUD='".$MyParam."'");
-        mysqli_query($MyConnection ,"SET par_idFolder_HEX='".$MyParam0."'");
-        mysqli_query($MyConnection ,"SET par_folderName='".$MyParam1."'");
-        mysqli_query($MyConnection ,"SET par_idProject='".$MyParam2."'");
-        mysqli_query($MyConnection ,"SET par_ispublic='".$MyParam3."'");
-        mysqli_query($MyConnection ,"SET par_idUser='".$MyParam4."'");
-        mysqli_query($MyConnection ,"SET par_status='".$MyParam5."'");
-        mysqli_query($MyConnection ,"SET par_folderLink='".$MyParam6."'");
-        mysqli_query($MyConnection ,"SET par_RETURN='@PAR_NONE'");
+        // mysqli_query($MyConnection ,"SET par_CRUD='".$MyParam."'");
+        // mysqli_query($MyConnection ,"SET par_idFolder_HEX='".$MyParam0."'");
+        // mysqli_query($MyConnection ,"SET par_folderName='".$MyParam1."'");
+        // mysqli_query($MyConnection ,"SET par_idProject='".$MyParam2."'");
+        // mysqli_query($MyConnection ,"SET par_ispublic='".$MyParam3."'");
+        // mysqli_query($MyConnection ,"SET par_idUser='".$MyParam4."'");
+        // mysqli_query($MyConnection ,"SET par_status='".$MyParam5."'");
+        // mysqli_query($MyConnection ,"SET par_folderLink='".$MyParam6."'");
+        // mysqli_query($MyConnection ,"SET par_RETURN='@PAR_NONE'");
 
-        mysqli_multi_query($MyConnection, "CALL get_constants()");
+        // mysqli_multi_query($MyConnection, "CALL get_constants()");
 
-        if (mysqli_multi_query($MyConnection, "CALL CRUD_prs_folders(par_CRUD, par_idFolder_HEX, par_folderName, par_idProject, par_ispublic, par_idUser, par_status, par_folderLink, par_RETURN)")) {
-        // if (mysqli_multi_query($MyConnection, "CALL CREATE_Folder(@p0, @p1, @p2, @p3, @p4, @p5, @p6)")) {
+        // if (mysqli_multi_query($MyConnection, "CALL CRUD_prs_folders(par_CRUD, par_idFolder_HEX, par_folderName, par_idProject, par_ispublic, par_idUser, par_status, par_folderLink, par_RETURN)")) {
+        if (mysqli_multi_query($MyConnection, "CALL CREATE_Folder(@p0, @p1, @p2, @p3, @p4, @p5, @p6)")) {
             return [
                 'msg' => 'Folder created successfully in Database',
                 'success' => true
