@@ -13,7 +13,8 @@ $(".root").on("click", function() {
 $("#back_to_main").on("click", function(){
   $("#_create_folder_section").show();
   $("#_folder").hide();
-  $(".error").text().hide();
+  $(".error").text('').hide();
+  $("label").removeClass('active');
 });
 
 $(".error").hide();
