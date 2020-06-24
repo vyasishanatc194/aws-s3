@@ -1,0 +1,5 @@
+#hide a Specific File
+<Files ~ "\.(Connection.php|config.php|md|gitignore|gitattributes|lock)$">
+Order allow,deny
+Deny from all
+</Files>
