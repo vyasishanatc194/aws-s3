@@ -4,14 +4,17 @@ require 'Magic.php';
 // $file_name = 'testFile1.txt';
 $userId = 1;
 $bucket = AWS_S3_BUCKET;
-
 ?>
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="icon" type="image/gif" href="/loader.gif"/>
         <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.24.min.js"></script>
         <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            .hide-element { display: none; }
+        </style>
     </head>
     <body>
         <div id="app"></div>
@@ -37,11 +40,7 @@ $bucket = AWS_S3_BUCKET;
         </div>
     </body>
 </html>
-<style>
-.hide-element {
-    display: none;
-}
-</style>
+
 <script>
 
 $(".root").on("click", function() {
@@ -122,8 +121,8 @@ function s3upload(newfoldername, getAttrId) {
                     console.log(err);
                     return true;
                 }
-                alert('Successfully Uploaded!');
-                location.reload();
+                // console.log(data);
+                saveRecordInDb(filePath, file.name);
             }).on('httpUploadProgress', function (progress) {
                 var uploaded = parseInt((progress.loaded * 100) / progress.total);
                 $("progress").attr('value', uploaded);
@@ -132,8 +131,23 @@ function s3upload(newfoldername, getAttrId) {
     });
 }
 
-$(document).ready(function() {
-    // code
-});
+function saveRecordInDb(filePath, file_name) {
+    var destinationDir = filePath;
+    var fileName = file_name;
+
+    $.ajax({
+        url: "Magic.php",
+        data: {
+            destinationDir: destinationDir.trim(),
+            fileName: fileName,
+            bucket: '<?php echo $bucket; ?>'
+        },
+        success: function( result ) {
+            alert('Successfully Uploaded!');
+            location.reload();
+        }
+    });
+}
+
 </script>
 

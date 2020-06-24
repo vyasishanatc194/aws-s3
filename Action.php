@@ -71,14 +71,14 @@ class Action {
     {
         $MyConnection = Connection::connectDB();
 
-        $MyParam0 = isset($file_name['name']) ? $file_name['name'] : ''; // idFolder
-        $MyParam1 = isset($file_name['name']) ? $file_name['name'] : ''; // idFile
+        $MyParam0 = explode("/", $folder_name)[2]; // idFolder
+        $MyParam1 = isset($file_name) ? $file_name : ''; // idFile
         $MyParam2 = ''; // type
         $MyParam3 = $status; // status
         $MyParam4 = $idAmi; // idAmi
         $MyParam5 = ''; // Errortype
-        $MyParam6 = isset($file_name['name']) ? $file_name['name'] : ''; // filename
-        $MyParam7 = ''; // hashfile
+        $MyParam6 = isset($file_name) ? $file_name : ''; // filename
+        $MyParam7 = $file_name; // hashfile
         $MyParam8 = $ObjectURL; // filetarget
         $MyParam9 = ''; // idSibling
 

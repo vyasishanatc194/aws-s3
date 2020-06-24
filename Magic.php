@@ -32,13 +32,14 @@ class Magic {
      */
     static function createFileCB($file_name, $folder_name, $bucket) {
 
-        $res = AwsS3::uploadFile($file_name, $folder_name, $bucket);
-        if ($res['statusCode'] == 200) {
+        // $res = AwsS3::uploadFile($file_name, $folder_name, $bucket);
+        // if ($res['statusCode'] == 200) {
             $status = 5;
             $idAmi = 'dev_RawConvert';
-            $response = Action::createFileInDB($file_name, $folder_name, $res['ObjectURL'], $idAmi, $status);
+            $ObjectURL = 'https://'.$bucket.'.s3.amazonaws.com/'.$folder_name;
+            $response = Action::createFileInDB($file_name, $folder_name, $ObjectURL, $idAmi, $status);
             return $response;
-        }
+        // }
     }
 
     /**
@@ -178,13 +179,11 @@ if (!empty($_REQUEST) && !empty($_REQUEST['destinationDir'])) {
     
     $destinationDir = $_REQUEST['destinationDir'];
     $bucket = AWS_S3_BUCKET;
-    $fileName = $_REQUEST['uploadedFile'];
+    $fileName = $_REQUEST['fileName'];
     $response = Magic::createFileCB($fileName, $destinationDir, $bucket);
     if ($response['success']) {
-        header('Location:'.BASEURL);
         // $fileNameArr = explode("/", $desctination);
         $html = '';
-        print_r($response);
         echo $html; die;
     } else {
         echo $response['msg'];
