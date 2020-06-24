@@ -20,7 +20,7 @@ class Action {
         $MyParam1 = $arr[count($arr)-2]; // folderName
         $MyParam2 = ''; // idProject
         $MyParam3 = $isPublic; // isPublic
-        $MyParam4 = ''; // idUser
+        $MyParam4 = $arr[1]; // idUser
         $MyParam5 = $status; // status
         $MyParam6 = $ObjectURL; // folderLink
 

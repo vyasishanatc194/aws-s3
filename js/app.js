@@ -1,43 +1,46 @@
 $(".root").on("click", function() {
-  $(".html_section").html('');
-  var selectedRoot = $(this).val();
+  $("#radio_option").val($(this).val());
   var getAttrId = $(this).attr('id');
   if (getAttrId == 'private') {
-      $(".public_section").hide();
+      $("#public").parent().removeClass('active');
+      $("#private").parent().addClass('active');
   } else {
-      $(".private_section").hide();
+    $("#private").parent().removeClass('active');
+    $("#public").parent().addClass('active');
   }
-  $.ajax({
-      url: "Magic.php",
-      data: {
-          root: selectedRoot.trim(),
-          bucket: '<?php echo $bucket; ?>'
-      },
-      success: function( result ) {
-          $("#" + getAttrId + "_folder").html('');
-          $("#" + getAttrId + "_folder").html(result);
-          childFunction(selectedRoot, getAttrId);
-      }
-  });
 });
 
-function childFunction(selectedRoot, getAttrId) {
-  $('#create_folder').click(function() {
-      var new_folder_name = '';
-      var newFolder = $(".folder_name").val();
-      new_folder_name = selectedRoot.trim() + newFolder.trim() + '/';
+$("#back_to_main").on("click", function(){
+  $("#_create_folder_section").show();
+  $("#_folder").hide();
+  $(".error").text().hide();
+});
 
-      $.ajax({
-          url: "Magic.php",
-          data: {
-              newfoldername: new_folder_name.trim(),
-              bucket: '<?php echo $bucket; ?>'
-          },
-          success: function( result ) {
-              $(".folder_name").val('');
-              $("#" + getAttrId + "_folder").html('');
-              $("#" + getAttrId + "_folder").html(result);
-          }
-      });
+$(".error").hide();
+
+// function childFunction(selectedRoot, getAttrId) {
+  $('#create_folder').click(function() {
+      var selectedRoot = $("#radio_option").val();
+      var newFolder = $(".folder_name").val();
+      var new_folder_name = selectedRoot.trim() + newFolder.trim() + '/';
+
+      if (newFolder.length == 0) { $("label.error").show().text("Please enter folder name."); return false; }
+      else if (selectedRoot.length == 0) { $("label.error").show().text("Please select one root folder name."); return false; }
+      else {
+        $.ajax({
+            url: "Magic.php",
+            data: {
+                newfoldername: new_folder_name.trim(),
+                bucket: $("#bucketName").val()
+            },
+            success: function( result ) {
+                $(".folder_name").val('');
+                $("#dynamic_folder_name").text(JSON.parse(result).folderName);
+                $("#dynamic_hidden_folder_name").val(JSON.parse(result).folderPath);
+                $("#_create_folder_section").hide();
+                $("#_folder").show();
+            }
+        });
+      }
   });
-}
+// }

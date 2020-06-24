@@ -90,14 +90,18 @@ if (!empty($_REQUEST) && !empty($_REQUEST['newfoldername'])) {
     $response = Magic::createFolderCB($newFolderName, $bucket);
     if ($response['success']) {
         $folderNameArr = explode("/", $newFolderName);
-        $html = '';
+        $response['data'] = [
+            'folderName' => $folderNameArr[count($folderNameArr)-2],
+            'folderPath' => $newFolderName
+        ];
+        // $html = '';
         // $newResposne = Magic::getAllFolderCB($bucket, $newFolderName);
-        $html .= '<label for="destination">';
-        $html .= '<i class="fa fa-folder-open" style="margin: 0 10px;"></i><input type="radio" value="'.$newFolderName.'" id="destination" name="destination" selected />';
-        $html .= $folderNameArr[count($folderNameArr)-2].'</label> <br/>';
-        $html .= '<input type="file" id="fileUpload" /> <br/>';
-        $html .= '<button type="button" id="upload">Upload File</button> <br/>';
-        $html .= '<progress max=”100” value=”0”></progress>';
+        // $html .= '<label for="destination">';
+        // $html .= '<i class="fa fa-folder-open" style="margin: 0 10px;"></i><input type="radio" value="'.$newFolderName.'" id="destination" name="destination" selected />';
+        // $html .= $folderNameArr[count($folderNameArr)-2].'</label> <br/>';
+        // $html .= '<input type="file" id="fileUpload" /> <br/>';
+        // $html .= '<button type="button" id="upload">Upload File</button> <br/>';
+        // $html .= '<progress max=”100” value=”0”></progress>';
         // if (count($resposne) == 1) {
             
         // } else {
@@ -118,7 +122,7 @@ if (!empty($_REQUEST) && !empty($_REQUEST['newfoldername'])) {
         //     }
         //     $html .= '</ul>';
         // }
-        echo $html; die;
+        echo json_encode($response['data']); die;
     } else {
         echo $response['msg'];
     }
