@@ -145,54 +145,56 @@ $bucket = AWS_S3_BUCKET;
         </script>
 
         <script>
-
         $("#_folder").hide();
+        var $destination = '';
+        var albumBucketName = "<?php echo AWS_S3_BUCKET; ?>";
+        var bucketRegion = "<?php echo AWS_S3_REGION; ?>";
+        var IdentityPoolId = '<?php echo IdentityPoolId; ?>';
+
+        AWS.config.update({
+            region: bucketRegion,
+            credentials: new AWS.CognitoIdentityCredentials({
+                IdentityPoolId: IdentityPoolId
+            })
+        });
+        var s3 = new AWS.S3({
+            apiVersion: "2006-03-01",
+            params: { Bucket: albumBucketName }
+        });
 
         function s3upload(files) {
-            // $("#upload").on("click", function(){
-            var $destination = $("#dynamic_hidden_folder_name").val();
-            var albumBucketName = "<?php echo AWS_S3_BUCKET; ?>";
-            var bucketRegion = "<?php echo AWS_S3_REGION; ?>";
-            var IdentityPoolId = '<?php echo IdentityPoolId; ?>';
-
-            AWS.config.update({
-                region: bucketRegion,
-                credentials: new AWS.CognitoIdentityCredentials({
-                    IdentityPoolId: IdentityPoolId
-                })
-            });
-
-            var s3 = new AWS.S3({
-                apiVersion: "2006-03-01",
-                params: { Bucket: albumBucketName }
-            });
-            // var files = document.getElementById('fileUpload').files;
-            console.log('files', files);
             if (files) {
+                $destination = $("#dynamic_hidden_folder_name").val();
                 var file = files.data;
                 var fileName = file.name;
                 var filePath = $destination + fileName;
-                s3.putObject({
-                    Key: filePath,
-                    Body: file,
-                    ACL: 'public-read'
-                }, 
-                function(err, data) {
-                    if(err) {
-                        console.log(err);
-                        return true;
-                    }
-                    // console.log(data);
-                    saveRecordInDb(filePath, files, data);
-                }).on('httpUploadProgress', function (progress) {
-                    var uploaded = parseInt((progress.loaded * 100) / progress.total);
-                    files.widget.settings.onUploadProgress.call(files.widget.element, files.id, uploaded);
-                    console.log(uploaded);
-                    // var uploaded = parseInt((progress.loaded * 100) / progress.total);
-                    // $("progress").attr('value', uploaded);
-                });
+                var checkFile = checkFileNameExists(file, $destination);
+                if (checkFile) {
+                    s3.upload({
+                        Key: filePath,
+                        Body: file,
+                        ContentType: files.type,
+                        ACL: 'public-read'
+                    }, function (err, data) {
+                        if(err) {
+                            console.log(err);
+                            return true;
+                        }
+                        saveRecordInDb(filePath, files, data);
+                    }).on('httpUploadProgress', function (progress) {
+                        var uploaded = parseInt((progress.loaded * 100) / progress.total);
+                        files.widget.settings.onUploadProgress.call(files.widget.element, files.id, uploaded);
+                        console.log(uploaded);
+                    });
+                }
             }
-            // });
+        }
+
+        function checkFileNameExists(file, $destination) {
+            if (file) {
+                return true;
+            }
+            return false;
         }
 
         function saveRecordInDb(filePath, files, data) {
@@ -214,8 +216,6 @@ $bucket = AWS_S3_BUCKET;
                 }
             });
         }
-
         </script>
     </body>
 </html>
-
