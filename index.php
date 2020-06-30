@@ -72,7 +72,7 @@ $bucket = AWS_S3_BUCKET;
                         </div>
                     </div>
 
-                    <div class="form-new-folder-root" id="_folder">
+                    <div class="form-new-folder-root" id="8_folder">
                         <main role="main" class="main-container w-100">
                             <div class="row">
                                 <div class="col-md-6 col-sm-12">
@@ -146,7 +146,7 @@ $bucket = AWS_S3_BUCKET;
 
         <script>
 
-        $("#_folder").hide();            
+        $("#_folder").hide();
 
         function s3upload(files) {
             // $("#upload").on("click", function(){
@@ -184,7 +184,10 @@ $bucket = AWS_S3_BUCKET;
                     }
                     // console.log(data);
                     saveRecordInDb(filePath, files, data);
-                }).on('httpUploadProgress', function (progress) {                    
+                }).on('httpUploadProgress', function (progress) {
+                    var uploaded = parseInt((progress.loaded * 100) / progress.total);
+                    files.widget.settings.onUploadProgress.call(files.widget.element, files.id, uploaded);
+                    console.log(uploaded);
                     // var uploaded = parseInt((progress.loaded * 100) / progress.total);
                     // $("progress").attr('value', uploaded);
                 });

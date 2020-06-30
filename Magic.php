@@ -1,4 +1,5 @@
 <?php
+// print_r($_POST); die;
 require 'AwsS3.php';
 require 'Action.php';
 

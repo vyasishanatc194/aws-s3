@@ -28,20 +28,27 @@ $(".error").hide();
       if (newFolder.length == 0) { $("label.error").show().text("Please enter folder name."); return false; }
       else if (selectedRoot.length == 0) { $("label.error").show().text("Please select one root folder name."); return false; }
       else {
-        $.ajax({
-            url: "Magic.php",
-            data: {
-                newfoldername: new_folder_name.trim(),
-                bucket: $("#bucketName").val()
-            },
-            success: function( result ) {
-                $(".folder_name").val('');
-                $("#dynamic_folder_name").text(JSON.parse(result).folderName);
-                $("#dynamic_hidden_folder_name").val(JSON.parse(result).folderPath);
-                $("#_create_folder_section").hide();
-                $("#_folder").show();
-            }
-        });
+        createFolderFn(new_folder_name);
       }
   });
 // }
+
+/**
+ * create folder in aws s3 function
+ */
+function createFolderFn(new_folder_name) {
+  $.ajax({
+      url: "Magic.php",
+      data: {
+          newfoldername: new_folder_name.trim(),
+          bucket: $("#bucketName").val()
+      },
+      success: function( result ) {
+          $(".folder_name").val('');
+          $("#dynamic_folder_name").text(JSON.parse(result).folderName);
+          $("#dynamic_hidden_folder_name").val(JSON.parse(result).folderPath);
+          $("#_create_folder_section").hide();
+          $("#_folder").show();
+      }
+  });
+}

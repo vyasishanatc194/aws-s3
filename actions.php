@@ -11,9 +11,7 @@ if (!empty($_REQUEST) && !empty($_REQUEST['newfoldername'])) {
     require 'Magic.php';
     $resposne = Magic::createFolderCB($bucket, $newFoldeName);
 
-    
     return json_decode($resposne);
-
 }
 
 ?>
