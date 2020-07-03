@@ -89,13 +89,13 @@ $bucket = AWS_S3_BUCKET;
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
+                            <div class="row" style="height: 408px;">
                                 <div class="col-md-6 col-sm-12 mb-20">
                                     <!-- Our markup, the important part here! -->
-                                    <div id="drag-and-drop-zone" class="dm-uploader p-5">
+                                    <div id="drag" class="dm-uploader p-5">
                                         <h3 class="mb-5 mt-5 text-muted">Drag &amp; drop files here</h3>
 
-                                        <div class="btn btn-primary btn-block mb-5">
+                                        <div class="btn btn-primary btn-block mb-5 hide-element">
                                             <span>Open the file Browser</span>
                                             <input type="file" id="fileUpload" title='Click to add Files' />
                                         </div>
@@ -121,9 +121,9 @@ $bucket = AWS_S3_BUCKET;
         <script type="text/javascript" src="js/app.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
 
-        <script src="js/jquery.dm-uploader.min.js"></script>
-        <script src="js/demo-ui.js"></script>
-        <script src="js/demo-config.js"></script>
+        <!-- <script src="js/jquery.dm-uploader.min.js"></script> -->
+        <!-- <script src="js/demo-ui.js"></script> -->
+        <!-- <script src="js/demo-config.js"></script> -->
 
         <!-- File item template -->
         <script type="text/html" id="files-template">
@@ -162,33 +162,109 @@ $bucket = AWS_S3_BUCKET;
             params: { Bucket: albumBucketName }
         });
 
-        function s3upload(files) {
+        function s3CreateFolder(files) {
             if (files) {
                 $destination = $("#dynamic_hidden_folder_name").val();
-                var file = files.data;
+                $("#dynamic_folder_name").text(files.name);
+                $("#dynamic_hidden_folder_name").val($destination + files.fullPath.slice(1) + "/");
+                files.id = Math.random().toString(36).substr(2);              
+                var file = files;
                 var fileName = file.name;
-                var filePath = $destination + fileName;
+                var filePath = $destination + fileName + "/";
                 var checkFile = checkFileNameExists(file, $destination);
                 if (checkFile) {
-                    s3.upload({
+                    ui_multi_add_file(file.id, file);
+                    s3.putObject({
                         Key: filePath,
-                        Body: file,
-                        ContentType: files.type,
                         ACL: 'public-read'
                     }, function (err, data) {
                         if(err) {
                             console.log(err);
                             return true;
                         }
-                        saveRecordInDb(filePath, files, data);
-                    }).on('httpUploadProgress', function (progress) {
-                        var uploaded = parseInt((progress.loaded * 100) / progress.total);
-                        files.widget.settings.onUploadProgress.call(files.widget.element, files.id, uploaded);
-                        console.log(uploaded);
+                        ui_multi_update_file_status(file, 100);
                     });
                 }
             }
         }
+
+        function s3upload(files) {
+            if (files) {
+                files.id = Math.random().toString(36).substr(2);
+                $destination = $("#dynamic_hidden_folder_name").val();
+                var file = files;
+                var fileName = file.name;
+                var filePath = $destination + fileName;
+                var checkFile = checkFileNameExists(file, $destination);
+                if (checkFile) {
+                    ui_multi_add_file(file.id, file);
+                    s3.upload({
+                        Key: filePath,
+                        Body: file,
+                        ContentType: file.type,
+                        ACL: 'public-read'
+                    }, function (err, data) {
+                        if(err) {
+                            console.log(err);
+                            return true;
+                        }
+                        saveRecordInDb(filePath, file, data);
+                    }).on('httpUploadProgress', function (progress) {
+                        var uploaded = parseInt((progress.loaded * 100) / progress.total);
+                        ui_multi_update_file_status(file, uploaded);
+                    });
+                }
+            }
+        }
+
+        // Creates a new file and add it to our list
+        function ui_multi_add_file(id, file) {
+            var template = $('#files-template').text();
+            template = template.replace('%%filename%%', file.name);
+
+            template = $(template);
+            template.prop('id', 'uploaderFile' + id);
+            template.data('file-id', id);
+
+            $('#files').find('li.empty').fadeOut(); // remove the 'no files yet'
+            $('#files').prepend(template);
+        }
+
+        // Changes the status messages on our list
+        function ui_multi_update_file_status(file, uploaded) {
+            var message = 'uploading';
+            var status = 'Uploading...';
+            var id = file.id;
+            if (uploaded > 0 && uploaded < 100) {
+                ui_multi_update_file_progress(id, uploaded, '', true);
+                $('#uploaderFile' + id).find('span').html(message).prop('class', 'status text-' + status);
+            } else if (uploaded == 100) {
+                ui_multi_update_file_progress(id, 100, 'success', true);
+                $('#uploaderFile' + id).find('span').html('success').prop('class', 'status text- Upload Complete');   
+            }
+        }
+
+        // Updates a file progress, depending on the parameters it may animate it or change the color.
+        function ui_multi_update_file_progress(id, percent, color, active) {
+            color = (typeof color === 'undefined' ? false : color);
+            active = (typeof active === 'undefined' ? true : active);
+
+            var bar = $('#uploaderFile' + id).find('div.progress-bar');
+
+            bar.width(percent + '%').attr('aria-valuenow', percent);
+            bar.toggleClass('progress-bar-striped progress-bar-animated', active);
+
+            if (percent === 0) {
+                bar.html('');
+            } else {
+                bar.html(percent + '%');
+            }
+
+            if (color == 'success') {
+                bar.removeClass('progress-bar-striped');
+                bar.addClass('bg-' + color);
+            }
+        }        
 
         function checkFileNameExists(file, $destination) {
             if (file) {
@@ -198,7 +274,7 @@ $bucket = AWS_S3_BUCKET;
         }
 
         function saveRecordInDb(filePath, files, data) {
-            var file = files.data;
+            var file = files;
             var fileName = file.name;
             var destinationDir = filePath;
 
@@ -210,7 +286,7 @@ $bucket = AWS_S3_BUCKET;
                     bucket: '<?php echo $bucket; ?>'
                 },
                 success: function( result ) {
-                    files.onSuccess(data);
+                    // files.onSuccess(data);
                     // alert('Successfully Uploaded!');
                     // location.reload();
                 }

@@ -52,3 +52,42 @@ function createFolderFn(new_folder_name) {
       }
   });
 }
+
+
+
+var drag = document.getElementById("drag");
+   
+drag.ondragover = function(e) {e.preventDefault()}
+drag.ondrop = function(e) {
+  e.preventDefault();
+    var length = e.dataTransfer.items.length;
+    for (var i = 0; i < length; i++) {
+      var entry = e.dataTransfer.items[i].webkitGetAsEntry();
+      var file = e.dataTransfer.files[i];
+      if (entry.isFile) {
+        var file = e.dataTransfer.files[i];
+        s3upload(file);
+      } else if (entry.isDirectory) {
+        traverseFileTree(entry);
+      }
+    }
+}
+
+function traverseFileTree(item, path) {
+  path = path || "";
+  if (item.isFile) {
+    // Get file
+    item.file(function(file) {
+      s3upload(file);
+    });
+  } else if (item.isDirectory) {
+    s3CreateFolder(item);
+    // Get folder contents
+    var dirReader = item.createReader();
+    dirReader.readEntries(function(entries) {
+      for (var i=0; i < entries.length; i++) {
+        traverseFileTree(entries[i], path + item.name + "/");
+      }
+    });
+  }
+}
