@@ -170,7 +170,7 @@ $bucket = AWS_S3_BUCKET;
                 files.id = Math.random().toString(36).substr(2);              
                 var file = files;
                 var fileName = file.name;
-                var filePath = $destination + fileName + "/";
+                var filePath = $destination.trim() + fileName.trim() + "/";
                 var checkFile = checkFileNameExists(file, $destination);
                 if (checkFile) {
                     ui_multi_add_file(file.id, file);
@@ -182,6 +182,7 @@ $bucket = AWS_S3_BUCKET;
                             console.log(err);
                             return true;
                         }
+                        createFolderFn(filePath, true);
                         ui_multi_update_file_status(file, 100);
                     });
                 }
@@ -194,7 +195,7 @@ $bucket = AWS_S3_BUCKET;
                 $destination = $("#dynamic_hidden_folder_name").val();
                 var file = files;
                 var fileName = file.name;
-                var filePath = $destination + fileName;
+                var filePath = $destination.trim() + fileName.trim();
                 var checkFile = checkFileNameExists(file, $destination);
                 if (checkFile) {
                     ui_multi_add_file(file.id, file);

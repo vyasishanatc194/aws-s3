@@ -9,16 +9,22 @@ class Magic {
      * @param folder_name
      * @param bucket
      */
-    static function createFolderCB($folder_name, $bucket) {
-
+    static function createFolderCB($folder_name, $bucket, $skip) {
+        
         if (!$bucket) {
             return 'Please enter bucket name';
         }
         if (!$folder_name) {
             return 'Please enter folder name';
         }
-        $res = AwsS3::createFolder($folder_name, $bucket);
-        if ($res['statusCode'] == 200) {
+        $status = '';
+        if ($skip == false) {
+            $status = 200;
+        } else { 
+            $res = AwsS3::createFolder($folder_name, $bucket);
+            $status = $res['statusCode'];
+        }
+        if ($status == 200) {            
             $status = 1;
             $isPublic = 1;
             $response = Action::createFolderInDB($folder_name, $res['ObjectURL'], $isPublic, $status);
@@ -87,8 +93,9 @@ class Magic {
 if (!empty($_REQUEST) && !empty($_REQUEST['newfoldername'])) {
     
     $newFolderName = $_REQUEST['newfoldername'];
+    $skip = $_REQUEST['skip'];
     $bucket = $_REQUEST['bucket'];
-    $response = Magic::createFolderCB($newFolderName, $bucket);
+    $response = Magic::createFolderCB($newFolderName, $bucket, $skip);
     if ($response['success']) {
         $folderNameArr = explode("/", $newFolderName);
         $response['data'] = [

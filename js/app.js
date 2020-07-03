@@ -28,7 +28,7 @@ $(".error").hide();
       if (newFolder.length == 0) { $("label.error").show().text("Please enter folder name."); return false; }
       else if (selectedRoot.length == 0) { $("label.error").show().text("Please select one root folder name."); return false; }
       else {
-        createFolderFn(new_folder_name);
+        createFolderFn(new_folder_name, false);
       }
   });
 // }
@@ -36,12 +36,13 @@ $(".error").hide();
 /**
  * create folder in aws s3 function
  */
-function createFolderFn(new_folder_name) {
+function createFolderFn(new_folder_name, skip_aws = false) {
   $.ajax({
       url: "Magic.php",
       data: {
           newfoldername: new_folder_name.trim(),
-          bucket: $("#bucketName").val()
+          bucket: $("#bucketName").val(),
+          skip: skip_aws,
       },
       success: function( result ) {
           $(".folder_name").val('');
