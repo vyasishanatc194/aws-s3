@@ -28,10 +28,10 @@ $(".error").hide();
       if (newFolder.length == 0) { $("label.error").show().text("Please enter folder name."); return false; }
       else if (selectedRoot.length == 0) { $("label.error").show().text("Please select one root folder name."); return false; }
       else {
-        createFolderFn(new_folder_name, false);
+        createFolderFn(new_folder_name, true);
       }
   });
-// }
+// } 
 
 /**
  * create folder in aws s3 function

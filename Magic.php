@@ -18,7 +18,7 @@ class Magic {
             return 'Please enter folder name';
         }
         $status = '';
-        if ($skip == false) {
+        if (!$skip) {
             $status = 200;
         } else { 
             $res = AwsS3::createFolder($folder_name, $bucket);

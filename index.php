@@ -182,7 +182,7 @@ $bucket = AWS_S3_BUCKET;
                             console.log(err);
                             return true;
                         }
-                        createFolderFn(filePath, true);
+                        createFolderFn(filePath, false);
                         ui_multi_update_file_status(file, 100);
                     });
                 }
