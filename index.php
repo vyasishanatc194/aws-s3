@@ -72,7 +72,7 @@ $bucket = AWS_S3_BUCKET;
                         </div>
                     </div>
 
-                    <div class="form-new-folder-root" id="8_folder">
+                    <div class="form-new-folder-root" id="_folder">
                         <main role="main" class="main-container w-100">
                             <div class="row">
                                 <div class="col-md-6 col-sm-12">
