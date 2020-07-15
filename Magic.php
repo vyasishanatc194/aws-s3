@@ -102,8 +102,9 @@ if (!empty($_REQUEST) && !empty($_REQUEST['newfoldername'])) {
             'folderName' => $folderNameArr[count($folderNameArr)-2],
             'folderPath' => $newFolderName
         ];
-        // $html = '';
+        $html = '';
         // $newResposne = Magic::getAllFolderCB($bucket, $newFolderName);
+        // print_r($newResposne); die;
         // $html .= '<label for="destination">';
         // $html .= '<i class="fa fa-folder-open" style="margin: 0 10px;"></i><input type="radio" value="'.$newFolderName.'" id="destination" name="destination" selected />';
         // $html .= $folderNameArr[count($folderNameArr)-2].'</label> <br/>';
@@ -135,6 +136,24 @@ if (!empty($_REQUEST) && !empty($_REQUEST['newfoldername'])) {
         echo $response['msg'];
     }
     die;
+}
+
+if (!empty($_REQUEST['getFolderList'])) {
+    $bucket = $_REQUEST['bucket'];
+    $desti = $_REQUEST['desti'];
+    $newResposne = Magic::getAllFolderCB($bucket, $desti);
+    $htmlArr = [];
+    if ($newResposne) {
+        foreach($newResposne as $key=>$val) {
+            $explodedVal = explode("/", $val);
+            $lastVal = trim($explodedVal[count($explodedVal)-1]);
+            $v = ($lastVal != '') ? $lastVal : trim($explodedVal[count($explodedVal)-2]);
+            $htmlArr[] = $v;
+        }
+        echo json_encode($htmlArr); die;
+    } else {
+        echo $response['msg'];
+    }
 }
 
 if (!empty($_REQUEST) && !empty($_REQUEST['root'])) {

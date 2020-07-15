@@ -84,8 +84,8 @@ $bucket = AWS_S3_BUCKET;
                                 </div>
                                 <div class="col-md-6 col-sm-12">
                                     <div class="heading-div">
-                                        <h2>Upload file in S3 folder: <span id="dynamic_folder_name">My Folder</span></h2>
-                                        <input type="hidden" value="" id="dynamic_hidden_folder_name" />
+                                        <h2>Upload file in S3 folder: <span id="dynamic_folder_name">DD</span></h2>
+                                        <input type="hidden" value="public/1/DD/" id="dynamic_hidden_folder_name" />
                                     </div>
                                 </div>
                             </div>
@@ -100,6 +100,7 @@ $bucket = AWS_S3_BUCKET;
                                             <input type="file" id="fileUpload" title='Click to add Files' />
                                         </div>
                                     </div><!-- /uploader -->
+                                    <ul id="folder_list"></ul>
                                 </div>
                                 <div class="col-md-6 col-sm-12 mb-20">
                                     <div class="card h-100">
@@ -145,7 +146,7 @@ $bucket = AWS_S3_BUCKET;
         </script>
 
         <script>
-        $("#_folder").hide();
+        // $("#_folder").hide();
         var $destination = '';
         var albumBucketName = "<?php echo AWS_S3_BUCKET; ?>";
         var bucketRegion = "<?php echo AWS_S3_REGION; ?>";
@@ -290,6 +291,30 @@ $bucket = AWS_S3_BUCKET;
                     // files.onSuccess(data);
                     // alert('Successfully Uploaded!');
                     // location.reload();
+                }
+            });
+        }
+
+        getFolderList();
+
+        function getFolderList() {
+            // var file = files;
+            // var fileName = file.name;
+            // var destinationDir = filePath;
+
+            $.ajax({
+                url: "Magic.php",
+                dataType: 'json',
+                data: {
+                    desti: 'public/1/DD/',
+                    getFolderList: true,
+                    bucket: '<?php echo $bucket; ?>'
+                },
+                success: function( result ) {
+                    // console.log(result);
+                    $.each(result, function(i, item) {
+                        $("#folder_list").append('<li>'+item+'</li>');
+                    });
                 }
             });
         }
