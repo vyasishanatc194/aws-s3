@@ -120,11 +120,13 @@ $bucket = AWS_S3_BUCKET;
         
         <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
         <script type="text/javascript" src="js/app.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
-
-        <!-- <script src="js/jquery.dm-uploader.min.js"></script> -->
-        <!-- <script src="js/demo-ui.js"></script> -->
-        <!-- <script src="js/demo-config.js"></script> -->
+        <script>
+            $(document).ready(function(){
+                $('[data-toggle="popover"]').popover();   
+            });
+        </script>
 
         <!-- File item template -->
         <script type="text/html" id="files-template">
@@ -163,6 +165,7 @@ $bucket = AWS_S3_BUCKET;
             params: { Bucket: albumBucketName }
         });
 
+        var baseURL = '';
         function s3CreateFolder(files) {
             if (files) {
                 $destination = $("#dynamic_hidden_folder_name").val();
@@ -173,6 +176,7 @@ $bucket = AWS_S3_BUCKET;
                 var fileName = file.name;
                 var filePath = $destination.trim() + fileName.trim() + "/";
                 var checkFile = checkFileNameExists(file, $destination);
+                console.log('s3CreateFolder');
                 if (checkFile) {
                     ui_multi_add_file(file.id, file);
                     s3.putObject({
@@ -198,6 +202,10 @@ $bucket = AWS_S3_BUCKET;
                 var fileName = file.name;
                 var filePath = $destination.trim() + fileName.trim();
                 var checkFile = checkFileNameExists(file, $destination);
+                
+                if (file.fullPath && baseURL) {
+                    filePath = baseURL + file.fullPath + fileName.trim();
+                }
                 if (checkFile) {
                     ui_multi_add_file(file.id, file);
                     s3.upload({
@@ -207,10 +215,10 @@ $bucket = AWS_S3_BUCKET;
                         ACL: 'public-read'
                     }, function (err, data) {
                         if(err) {
-                            console.log(err);
+                            console.log('err', err);
                             return true;
                         }
-                        saveRecordInDb(filePath, file, data);
+                        getFolderList();
                     }).on('httpUploadProgress', function (progress) {
                         var uploaded = parseInt((progress.loaded * 100) / progress.total);
                         ui_multi_update_file_status(file, uploaded);
@@ -230,6 +238,10 @@ $bucket = AWS_S3_BUCKET;
 
             $('#files').find('li.empty').fadeOut(); // remove the 'no files yet'
             $('#files').prepend(template);
+            if (file.size < 1) {
+                ui_multi_update_file_progress(file.id, 0, 'danger', false);
+                $('#uploaderFile' + file.id).find('span').html('0 KB file is not allow to upload.').prop('class', 'status text-' + 'danger');
+            }
         }
 
         // Changes the status messages on our list
@@ -275,25 +287,25 @@ $bucket = AWS_S3_BUCKET;
             return false;
         }
 
-        function saveRecordInDb(filePath, files, data) {
-            var file = files;
-            var fileName = file.name;
-            var destinationDir = filePath;
+        // function saveRecordInDb(filePath, files, data) {
+        //     var file = files;
+        //     var fileName = file.name;
+        //     var destinationDir = filePath;
 
-            $.ajax({
-                url: "Magic.php",
-                data: {
-                    destinationDir: destinationDir.trim(),
-                    fileName: fileName,
-                    bucket: '<?php echo $bucket; ?>'
-                },
-                success: function( result ) {
-                    // files.onSuccess(data);
-                    // alert('Successfully Uploaded!');
-                    // location.reload();
-                }
-            });
-        }
+        //     $.ajax({
+        //         url: "Magic.php",
+        //         data: {
+        //             destinationDir: destinationDir.trim(),
+        //             fileName: fileName,
+        //             bucket: '<?php echo $bucket; ?>'
+        //         },
+        //         success: function( result ) {
+        //             // files.onSuccess(data);
+        //             // alert('Successfully Uploaded!');
+        //             // location.reload();
+        //         }
+        //     });
+        // }
 
         getFolderList();
 
@@ -311,10 +323,28 @@ $bucket = AWS_S3_BUCKET;
                     bucket: '<?php echo $bucket; ?>'
                 },
                 success: function( result ) {
-                    // console.log(result);
-                    $.each(result, function(i, item) {
-                        $("#folder_list").append('<li>'+item+'</li>');
-                    });
+                    console.log(result);
+                    // if (!result.data.success) {
+                    //     $("#folder_list").html('');
+                    //     $("#folder_list").append('<h3>Existing Folders/Files in S3 Directory</h3>');
+                    //     $.each(result.data, function(i, item) {
+                    //         var $explodedVal = item.split("/");
+                    //         var $lastVal = $explodedVal[$explodedVal.length - 1].trim();
+                            
+                    //         if (!result.data.success) {
+                    //             $("#folder_list").html('');
+                    //             $("#folder_list").append('<h3>Existing Folders/Files in S3 Directory</h3>');
+                    //             $.each(result.data, function(i, item) {
+                    //                 var $explodedVal = item.split("/");
+                    //                 var $lastVal = $explodedVal[$explodedVal.length - 1].trim();
+                    //                 var $v = ($lastVal != '') ? '<li class="file badge badge-success"><i class="fa fa-file" aria-hidden="true"></i> '+$lastVal+'</li>' : '<li class="folder badge badge-primary"><i class="fa fa-folder" aria-hidden="true"></i> '+$explodedVal[$explodedVal.length - 2].trim()+'</li>';
+                    //                 $("#folder_list").append($v);
+                    //             });
+                    //         }
+                            
+                    //         $("#folder_list").append($v);
+                    //     });
+                    // }
                 }
             });
         }
