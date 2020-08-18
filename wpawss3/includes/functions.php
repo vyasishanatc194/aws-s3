@@ -12,13 +12,16 @@ function records_list() {
         'message' => 'Network error.',
     ];
 
-//     $servername = get_option('wpawss3_host');
-//     $username = get_option('wpawss3_username');
-//     $password = get_option('wpawss3_password');
+    $servername = get_option('wpawss3_host');
+    $username = get_option('wpawss3_username');
+    $password = get_option('wpawss3_password');
     $dbname = get_option('wpawss3_db_name');
-	$servername = "localhost:3306";
-	$username = 'wpDataTables';
-	$password = 'd903kdas;l390-f$jki43 i-0233kd023;% IKO3($*#kjdl';
+
+        
+ //    $dbname = get_option('wpawss3_db_name');
+	// $servername = "localhost:3306";
+	// $username = 'wpDataTables';
+	// $password = 'd903kdas;l390-f$jki43 i-0233kd023;% IKO3($*#kjdl';
 
     try {
         $conn = new PDO("mysql:host=$servername;dbname=processing", $username, $password);
