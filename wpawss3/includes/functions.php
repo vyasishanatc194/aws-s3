@@ -321,7 +321,7 @@ function store_process() {
 	
 	if($process_radio == 'process_file'){
 		
-		if(mysqli_multi_query($MyConnection, "CALL prs_app_file('".$filehas."', $idAppPar, $par_idApp, $userId, 'test')")) {
+		if(mysqli_multi_query($MyConnection, "CALL prs_app_file('".$filehas."', $idAppPar, $par_idApp, $userId, $comment)")) {
 			$result['success'] = true;
 			$result['data'] = [
 				'message' => 'File processed Successfully.',
@@ -333,7 +333,7 @@ function store_process() {
 	}
 	
 	if($process_radio == 'process_folder'){
-		if(mysqli_multi_query($MyConnection, "CALL prs_app_folder('".$folderhas."', $idAppPar, $par_idApp, $userId, 'test')")) {
+		if(mysqli_multi_query($MyConnection, "CALL prs_app_folder('".$folderhas."', $idAppPar, $par_idApp, $userId, $comment)")) {
 			$result['success'] = true;
 			$result['data'] = [
 				'message' => 'Folder processed Successfully.',
