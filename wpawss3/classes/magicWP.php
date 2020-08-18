@@ -32,6 +32,89 @@ class magicWP {
         $res = AwsS3WP::getListOfBuckets($bucket, $prefix);
         return $res;
     }
+    
+    static function getAllFolderDB($bucket, $prefix) {
+		
+		$userId = 1;
+		if( is_user_logged_in() ) {
+			$userId = get_current_user_id();
+        }
+		
+		$servername = get_option('wpawss3_host');
+        $username = get_option('wpawss3_username');
+        $password = get_option('wpawss3_password');
+        $dbname = get_option('wpawss3_db_name');
+		
+		$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
+		
+		$par_idUser = $userId;
+        $data = [];
+		mysqli_multi_query($MyConnection, "CALL get_constants()");
+		
+	    if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_folders(@CRUD_READ, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE, $par_idUser, @FOLDER_STATUS_COMPLETED  , @PAR_NONE)")) {
+			
+		//if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_folders(@CRUD_READ, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE, $par_idUser, @FOLDER_STATUS_FILE_UPLOAD  , @PAR_NONE)")) {
+		
+			while (mysqli_more_results($MyConnection)) {
+
+				   if ($results = mysqli_store_result($MyConnection)) {
+
+						  while ($row = mysqli_fetch_assoc($results)) {
+								$data[] = $row;
+						  }
+						  mysqli_free_result($results);
+				   }
+				   mysqli_next_result($MyConnection);
+			}
+			
+			$result['data'] = $data;
+		
+			//wp_send_json_success( $result );
+			mysqli_close($MyConnection);
+		}		
+	 return $result;
+    }
+	
+	static function getAllFileDB($bucket, $prefix, $folderhas) {
+		
+		$userId = 1;
+		if( is_user_logged_in() ) {
+			$userId = get_current_user_id();
+        }
+		
+		//$folderhas = '9a2eba77-d70a-11ea-a3ac-0ef030544d11';
+		
+		$servername = get_option('wpawss3_host');
+        $username = get_option('wpawss3_username');
+        $password = get_option('wpawss3_password');
+        $dbname = get_option('wpawss3_db_name');
+		
+		$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
+		
+		$par_idUser = $userId;
+        $data = [];
+		mysqli_multi_query($MyConnection, "CALL get_constants()");
+		if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_files(@CRUD_READ, '".$folderhas."', @PAR_NONE, @FILE_TYPE_CONVERTED, @PAR_NONE, @FILE_STATUS_COMPLETED, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE)")) {
+		
+			while (mysqli_more_results($MyConnection)) {
+
+				   if ($results = mysqli_store_result($MyConnection)) {
+					
+						  while ($row = mysqli_fetch_assoc($results)) {
+								$data[] = $row;
+						  }
+						  mysqli_free_result($results);
+				   }
+				   mysqli_next_result($MyConnection);
+			}
+			
+			$result['data'] = $data;
+			
+			//wp_send_json_success( $result );
+			mysqli_close($MyConnection);
+		}		
+	 return $result;
+    }
 
     /**
      * function to make an array from array

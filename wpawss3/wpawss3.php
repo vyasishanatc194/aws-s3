@@ -102,4 +102,5 @@ require_once WPS3_PLUGIN_DIR . '/includes/settings.php';
 require_once WPS3_PLUGIN_DIR . '/includes/functions.php';
 require_once WPS3_PLUGIN_DIR . '/front/index.php';
 require_once WPS3_PLUGIN_DIR . '/front/folder-list.php';
+require_once WPS3_PLUGIN_DIR . '/front/process.php';
 require_once WPS3_PLUGIN_DIR . '/classes/magic.php';

@@ -107,6 +107,36 @@ function magic_funcs() {
 		die;
 	}
 
+    if(!empty($_POST['wpawss3_getDBFolderList'])){
+        $bucket = $_POST['wpawss3_bucket'];
+         $desti = $_POST['wpawss3_desti'];
+         $response = MagicWP::getAllFolderDB($bucket, $desti);
+         if ($response['data']) {
+             
+             $response['success'] = true;
+             wp_send_json_success($response);
+         } else {
+             $response['msg'] = 'Folder not found';
+             wp_send_json_error($response['msg']);
+         }
+         die;
+     }
+     
+     if(!empty($_POST['wpawss3_getfileList'])){
+        $bucket = $_POST['wpawss3_bucket'];
+         $desti = $_POST['wpawss3_desti'];
+         $folderhas = $_POST['wpawss3_folderhas'];
+         $response = MagicWP::getAllFileDB($bucket, $desti, $folderhas);
+         if ($response['data']) {
+             
+             $response['success'] = true;
+             wp_send_json_success($response);
+         } else {
+             $response['msg'] = 'File not found';
+             wp_send_json_error($response['msg']);
+         }
+         die;
+     }
 	
 	if (!empty($_POST['wpawss3_getFolderList'])) {
 		$bucket = $_POST['wpawss3_bucket'];
@@ -185,6 +215,137 @@ function create_folder() {
 }
 add_action('wp_ajax_create_folder', 'create_folder');
 add_action('wp_ajax_nopriv_create_folder', 'create_folder');
+
+
+function get_id_app_par() {
+	check_ajax_referer('wpawss3', 'security');
+	
+    $response = [];
+	// default response
+	$response['success'] = false;
+	$response['data'] = [
+		'message' => 'Network error.',
+	];
+	
+	$servername = get_option('wpawss3_host');
+	$username = get_option('wpawss3_username');
+	$password = get_option('wpawss3_password');
+	$dbname = get_option('wpawss3_db_name');
+
+	$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
+	
+	if($_POST['par_idApp'] == 2){
+		
+		mysqli_multi_query($MyConnection, "CALL get_constants()");
+		if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_app_parameters_safd(@CRUD_READ , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)")) {
+		
+			while (mysqli_more_results($MyConnection)) {
+
+				   if ($results = mysqli_store_result($MyConnection)) {
+					
+						  while ($row = mysqli_fetch_assoc($results)) {
+								$data[] = $row;
+						  }
+						  mysqli_free_result($results);
+				   }
+				   mysqli_next_result($MyConnection);
+			}
+			$response['data']['message'] = '';
+			$response['idAppPar'] = $data[0]['idAppParSaf'];
+			
+			$response['success'] = true;
+			wp_send_json_success($response);
+			mysqli_close($MyConnection);
+		}	
+	}
+	if($_POST['par_idApp'] == 3){
+		mysqli_multi_query($MyConnection, "CALL get_constants()");
+		if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_app_parameters_COMP(@CRUD_READ , NULL, NULL, NULL, NULL, NULL, NULL)")) {
+		
+			while (mysqli_more_results($MyConnection)) {
+
+				   if ($results = mysqli_store_result($MyConnection)) {
+					
+						  while ($row = mysqli_fetch_assoc($results)) {
+								$data[] = $row;
+						  }
+						  mysqli_free_result($results);
+				   }
+				   mysqli_next_result($MyConnection);
+			}
+			$response['data']['message'] = '';
+			$response['idAppPar'] = $data[0]['idAppParCmp'];
+			$response['success'] = true;
+			wp_send_json_success($response);
+			mysqli_close($MyConnection);
+		}	
+	}
+	wp_send_json_error( $result );
+}
+
+add_action('wp_ajax_get_id_app_par', 'get_id_app_par');
+add_action('wp_ajax_nopriv_get_id_app_par', 'get_id_app_par');
+
+function store_process() {
+	check_ajax_referer('wpawss3', 'security');
+	
+	$result = [];
+	// default response
+	$result['success'] = false;
+	$result['data'] = [
+		'message' => 'Network error.',
+	];
+	
+	$folderhas = $_POST['folderhas'];
+	$process_radio = $_POST['process_radio'];
+	$filehas = $_POST['filehas'];
+	$par_idApp = $_POST['par_idApp'];
+	$idAppPar = $_POST['idAppPar'];
+	$comment = $_POST['comment'];
+	
+	$userId = 1;
+	if( is_user_logged_in() ) {
+		$userId = get_current_user_id();
+	}
+
+	$servername = get_option('wpawss3_host');
+	$username = get_option('wpawss3_username');
+	$password = get_option('wpawss3_password');
+	$dbname = get_option('wpawss3_db_name');
+
+	$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
+	mysqli_multi_query($MyConnection, "CALL get_constants()");
+	
+	if($process_radio == 'process_file'){
+		
+		if(mysqli_multi_query($MyConnection, "CALL prs_app_file('".$filehas."', $idAppPar, $par_idApp, $userId, 'test')")) {
+			$result['success'] = true;
+			$result['data'] = [
+				'message' => 'File processed Successfully.',
+			];
+			wp_send_json_success( $result );
+			mysqli_close($MyConnection);
+		}
+		
+	}
+	
+	if($process_radio == 'process_folder'){
+		if(mysqli_multi_query($MyConnection, "CALL prs_app_folder('".$folderhas."', $idAppPar, $par_idApp, $userId, 'test')")) {
+			$result['success'] = true;
+			$result['data'] = [
+				'message' => 'Folder processed Successfully.',
+			];
+			wp_send_json_success( $result );
+			mysqli_close($MyConnection);
+		}
+		
+	}
+	
+	wp_send_json_error( $result );
+}
+
+add_action('wp_ajax_store_process', 'store_process');
+add_action('wp_ajax_nopriv_store_process', 'store_process');
 
 // function process_ajax() {
 // 	check_ajax_referer('wpawss3', 'security');
