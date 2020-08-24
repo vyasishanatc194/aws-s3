@@ -11,20 +11,21 @@ function records_list() {
     $result['data'] = [
         'message' => 'Network error.',
     ];
-
-    $servername = get_option('wpawss3_host');
-    $username = get_option('wpawss3_username');
-    $password = get_option('wpawss3_password');
+ 	
+// 	$servername = get_option('wpawss3_host');
+// 	$username = get_option('wpawss3_username');
+// 	$password = get_option('wpawss3_password');
+//  $dbname = get_option('wpawss3_db_name');
+	
+	
     $dbname = get_option('wpawss3_db_name');
-
-        
- //    $dbname = get_option('wpawss3_db_name');
-	// $servername = "localhost:3306";
-	// $username = 'wpDataTables';
-	// $password = 'd903kdas;l390-f$jki43 i-0233kd023;% IKO3($*#kjdl';
+	$servername = "localhost:3306";
+	$username = 'wpDataTables';
+	$password = 'd903kdas;l390-f$jki43 i-0233kd023;% IKO3($*#kjdl';
 
     try {
         $conn = new PDO("mysql:host=$servername;dbname=processing", $username, $password);
+		
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		try {
             $s3 = new S3Client([
@@ -38,6 +39,12 @@ function records_list() {
         } catch (\Exception $e) {
             echo $e->getMessage() . PHP_EOL; 
         }
+		
+		$userId = 1;
+		if( is_user_logged_in() ) {
+			$userId = get_current_user_id();
+		}
+		
         // set the PDO error mode to exception
         $sql_stmt = "SELECT 
                     PF.`folderName`, PFS.`label` as `status`, PU.`label` as idUser, BIN_TO_UUID(PF.`idFolder`) as idFolder, PFI.label as isPublic 
@@ -45,11 +52,12 @@ function records_list() {
                     INNER JOIN prs_folders_ispublic PFI ON PFI.id = PF.isPublic
                     INNER JOIN prs_users PU ON PU.id = PF.idUser
                     INNER JOIN prs_folders_status PFS ON PFS.id = PF.status
-					WHERE PF.status = 1
+					WHERE PF.status = 1 AND PF.idUser = $userId
                     "; 
         $stmt = $conn->prepare($sql_stmt);
         $stmt->execute();
         $result = $stmt->fetchAll();
+		
         foreach($result as $key=>$value) {
             $isPublic = ($value['isPublic'] == 'Public') ? 'public/' : 'private/';
             $userlogin = get_current_user_id().'/';
@@ -110,42 +118,43 @@ function magic_funcs() {
 		die;
 	}
 
-    if(!empty($_POST['wpawss3_getDBFolderList'])){
-        $bucket = $_POST['wpawss3_bucket'];
-         $desti = $_POST['wpawss3_desti'];
-         $response = MagicWP::getAllFolderDB($bucket, $desti);
-         if ($response['data']) {
-             
-             $response['success'] = true;
-             wp_send_json_success($response);
-         } else {
-             $response['msg'] = 'Folder not found';
-             wp_send_json_error($response['msg']);
-         }
-         die;
-     }
-     
-     if(!empty($_POST['wpawss3_getfileList'])){
-        $bucket = $_POST['wpawss3_bucket'];
-         $desti = $_POST['wpawss3_desti'];
-         $folderhas = $_POST['wpawss3_folderhas'];
-         $response = MagicWP::getAllFileDB($bucket, $desti, $folderhas);
-         if ($response['data']) {
-             
-             $response['success'] = true;
-             wp_send_json_success($response);
-         } else {
-             $response['msg'] = 'File not found';
-             wp_send_json_error($response['msg']);
-         }
-         die;
-     }
+	if(!empty($_POST['wpawss3_getDBFolderList'])){
+       $bucket = $_POST['wpawss3_bucket'];
+		$desti = $_POST['wpawss3_desti'];
+        $response = MagicWP::getAllFolderDB($bucket, $desti);
+        if ($response['data']) {
+			
+            $response['success'] = true;
+			wp_send_json_success($response);
+		} else {
+			$response['msg'] = 'Folder not found';
+			wp_send_json_error($response['msg']);
+		}
+		die;
+    }
+	
+	if(!empty($_POST['wpawss3_getfileList'])){
+       $bucket = $_POST['wpawss3_bucket'];
+		$desti = $_POST['wpawss3_desti'];
+		$folderhas = $_POST['wpawss3_folderhas'];
+        $response = MagicWP::getAllFileDB($bucket, $desti, $folderhas);
+        if ($response['data']) {
+			
+            $response['success'] = true;
+			wp_send_json_success($response);
+		} else {
+			$response['msg'] = 'File not found';
+			wp_send_json_error($response['msg']);
+		}
+		die;
+    }
 	
 	if (!empty($_POST['wpawss3_getFolderList'])) {
 		$bucket = $_POST['wpawss3_bucket'];
 		$desti = $_POST['wpawss3_desti'];
         $response = MagicWP::getAllFolderCB($bucket, $desti);
-        // print_r($response); die;
+//         print_r($response);
+		$arr = [];
 		if ($response) {
             $response['success'] = true;
 			wp_send_json_success($response);
@@ -154,6 +163,7 @@ function magic_funcs() {
 		}
 		die;
 	}
+	
 	wp_send_json_error( $result );
 }
 
@@ -219,6 +229,7 @@ function create_folder() {
 add_action('wp_ajax_create_folder', 'create_folder');
 add_action('wp_ajax_nopriv_create_folder', 'create_folder');
 
+// Get idAppParSaf or idAppParCmp based on SAFD or COMP selection.
 
 function get_id_app_par() {
 	check_ajax_referer('wpawss3', 'security');
@@ -289,6 +300,8 @@ function get_id_app_par() {
 add_action('wp_ajax_get_id_app_par', 'get_id_app_par');
 add_action('wp_ajax_nopriv_get_id_app_par', 'get_id_app_par');
 
+// Store process 
+
 function store_process() {
 	check_ajax_referer('wpawss3', 'security');
 	
@@ -315,63 +328,206 @@ function store_process() {
 	$username = get_option('wpawss3_username');
 	$password = get_option('wpawss3_password');
 	$dbname = get_option('wpawss3_db_name');
-
+	
 	$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
 	mysqli_multi_query($MyConnection, "CALL get_constants()");
 	
-	if($process_radio == 'process_file'){
-		
-		if(mysqli_multi_query($MyConnection, "CALL prs_app_file('".$filehas."', $idAppPar, $par_idApp, $userId, $comment)")) {
-			$result['success'] = true;
-			$result['data'] = [
-				'message' => 'File processed Successfully.',
-			];
-			wp_send_json_success( $result );
-			mysqli_close($MyConnection);
+		if($process_radio == 'process_file'){
+
+			if(mysqli_multi_query($MyConnection, "CALL prs_app_file('".$filehas."', $idAppPar, $par_idApp, $userId, '".$comment."')")) {
+				
+				$result['success'] = true;
+				$result['data'] = [
+					'message' => 'File processed Successfully.',
+				];
+				wp_send_json_success( $result );
+				mysqli_close($MyConnection);
+			}else{
+				 $result['success'] = false;
+        		 $result['message'] = mysqli_error($MyConnection);
+				 wp_send_json_error( $result );
+        
+			}
+
+		}else if($process_radio == 'process_folder'){
+			if(mysqli_multi_query($MyConnection, "CALL prs_app_folder('".$folderhas."', $idAppPar, $par_idApp, $userId,  '".$comment."')")) {
+				$result['success'] = true;
+				$result['data'] = [
+					'message' => 'Folder processed Successfully.',
+				];
+				wp_send_json_success( $result );
+				mysqli_close($MyConnection);
+			}else{
+				 $result['success'] = false;
+        		 $result['message'] = mysqli_error($MyConnection);
+				 wp_send_json_error( $result );
+        
+			}
+
 		}
 		
-	}
-	
-	if($process_radio == 'process_folder'){
-		if(mysqli_multi_query($MyConnection, "CALL prs_app_folder('".$folderhas."', $idAppPar, $par_idApp, $userId, $comment)")) {
-			$result['success'] = true;
-			$result['data'] = [
-				'message' => 'Folder processed Successfully.',
-			];
-			wp_send_json_success( $result );
-			mysqli_close($MyConnection);
-		}
-		
-	}
-	
 	wp_send_json_error( $result );
 }
 
 add_action('wp_ajax_store_process', 'store_process');
 add_action('wp_ajax_nopriv_store_process', 'store_process');
 
-// function process_ajax() {
-// 	check_ajax_referer('wpawss3', 'security');
-// 	$insertdata = [];
-// 	$result = [];
 
-// 	// default response
-// 	$result['success'] = false;
-// 	$result['data'] = [
-// 		'message' => 'Network error.',
-// 	];
+function process_ajax() {
+	check_ajax_referer('wpawss3', 'security');
+	$insertdata = [];
+	$result = [];
+
+	// default response
+	$result['success'] = false;
+	$result['data'] = [
+		'message' => 'Network error.',
+	];
 	
-// 	if (!empty($_POST) && !empty($_POST['hrefVal'])) {    
-// 		$hrefVal = $_POST['hrefVal'];
-// 		$cmd = 'python3 /home/Action/Actions.py --action PROCESS_FOLDER --idFolder '.$hrefVal;
-// 		if ($response['success']) {
-// 			$response['data'] = $output;
-// 			wp_send_json_success($response);
-// 		} else {
-// 			wp_send_json_error($response['msg']);
-// 		}
-// 		die;
-// 	}
-// }
-// add_action('wp_ajax_process_ajax', 'process_ajax');
-// add_action('wp_ajax_nopriv_process_ajax', 'process_ajax');
+	if (!empty($_POST) && !empty($_POST['hrefVal'])) {    
+		$hrefVal = $_POST['hrefVal'];
+		$cmd = 'python3 /home/Action/Actions.py --action PROCESS_FOLDER --idFolder '.$hrefVal;
+		if ($response['success']) {
+			$response['data'] = $output;
+			wp_send_json_success($response);
+		} else {
+			wp_send_json_error($response['msg']);
+		}
+		die;
+	}
+}
+add_action('wp_ajax_process_ajax', 'process_ajax');
+add_action('wp_ajax_nopriv_process_ajax', 'process_ajax');
+
+function add_meta_for_existing_swath() {
+	check_ajax_referer('wpawss3', 'security');
+	
+	$result = [];
+	// default response
+	$result['success'] = false;
+	$result['data'] = [
+		'message' => 'Network error.',
+	];
+	
+	$folderhas = $_POST['folderhas'];
+	$par_idFile = $_POST['filehas'];
+	$par_mode = $_POST['mode'];
+	$par_isSwath = $_POST['par_isSwath'];
+	$par_idSwath = $_POST['par_idSwath'];
+	
+	$servername = get_option('wpawss3_host');
+	$username = get_option('wpawss3_username');
+	$password = get_option('wpawss3_password');
+	$dbname = get_option('wpawss3_db_name');
+
+	$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
+	mysqli_multi_query($MyConnection, "CALL get_constants()");
+
+	if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_files_metadata(@CRUD_CREATE, '".$par_idFile."', $par_mode, $par_isSwath, $par_idSwath, NULL)")) {
+		
+		$result['success'] = true;
+		$result['data'] = [
+			'message' => 'Meta added for existing swath Successfully.',
+		];
+		wp_send_json_success( $result );
+		mysqli_close($MyConnection);
+	}
+	
+	wp_send_json_error( $result );
+}
+
+add_action('wp_ajax_add_meta_for_existing_swath', 'add_meta_for_existing_swath');
+add_action('wp_ajax_nopriv_add_meta_for_existing_swath', 'add_meta_for_existing_swath');
+
+
+
+function add_meta_for_new_swath() {
+	check_ajax_referer('wpawss3', 'security');
+	
+	$result = [];
+	// default response
+	$result['success'] = false;
+	$result['data'] = [
+		'message' => 'Network error.',
+	];
+	
+	$folderhas = $_POST['folderhas'];
+	$par_idFile = $_POST['filehas'];
+	$par_mode = $_POST['mode'];
+	$par_isSwath = $_POST['par_isSwath'];
+	
+	$par_expIndex = $_POST['par_expIndex'];
+	$par_startMass = $_POST['par_startMass'];
+	$par_stopMass = $_POST['par_stopMass'];
+	$par_ces = $_POST['par_ces'];
+	
+	$j = count($par_expIndex);
+// 	print_r($_POST);
+// 	print_r($j);
+	
+	$servername = get_option('wpawss3_host');
+	$username = get_option('wpawss3_username');
+	$password = get_option('wpawss3_password');
+	$dbname = get_option('wpawss3_db_name');
+
+	$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
+	
+	
+	for ($i = 0; $i <= $j-1; $i++) {
+	  	if($i == 0){
+			if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_files_metadata_swath(@CRUD_CREATE , @PAR_NONE, $par_startMass[$i], $par_stopMass[$i], $par_ces[$i], @PAR_NONE)")) {
+				echo 'hii';
+				exit;
+		
+				while (mysqli_more_results($MyConnection)) {
+
+				   if ($results = mysqli_store_result($MyConnection)) {
+						  print_r($results);
+					   
+						  while ($row = mysqli_fetch_assoc($results)) {
+								$data[] = $row;
+						  }
+						  mysqli_free_result($results);
+				   }
+				   mysqli_next_result($MyConnection);
+				}
+	
+				print_r($data);
+				exit;
+			}
+		}else{
+		
+			
+		}
+		
+	}
+	
+	
+	
+	exit;
+	
+	
+	$servername = get_option('wpawss3_host');
+	$username = get_option('wpawss3_username');
+	$password = get_option('wpawss3_password');
+	$dbname = get_option('wpawss3_db_name');
+
+	$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
+	mysqli_multi_query($MyConnection, "CALL get_constants()");
+
+	if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_files_metadata(@CRUD_CREATE, '".$par_idFile."', $par_mode, $par_isSwath, $par_idSwath, NULL)")) {
+		
+		$result['success'] = true;
+		$result['data'] = [
+			'message' => 'Meta added for existing swath Successfully.',
+		];
+		wp_send_json_success( $result );
+		mysqli_close($MyConnection);
+	}
+	
+	wp_send_json_error( $result );
+}
+
+add_action('wp_ajax_add_meta_for_new_swath', 'add_meta_for_new_swath');
+add_action('wp_ajax_nopriv_add_meta_for_new_swath', 'add_meta_for_new_swath');
+

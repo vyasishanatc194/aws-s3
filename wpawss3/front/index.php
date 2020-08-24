@@ -10,7 +10,7 @@ if( is_user_logged_in() ) {
 </script>
 <?php
 }
-    $bucket = get_option('wpawss3_s3_bucket');
+$bucket = get_option('wpawss3_s3_bucket');
 ?>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css">
 <link rel="stylesheet" href="<?php echo plugins_url('wpawss3') . '/assets/css/jquery.dm-uploader.min.css'; ?>">
@@ -313,41 +313,42 @@ if( is_user_logged_in() ) {
 						var array3 = [];
 						var array4 = [];
 						var $HTML = '';
-						if (result.data.success) {
+						if (result.success) {
 							$("#folder_list").html('');
 							$("#folder_list").append('<h3>Existing Folders/Files in S3 Directory</h3>');
+// 							$("#folder_list").html(result.data.data);
 							$.each(result.data, function(i, item) {
-								var itemArray = item.split("/");
-								var newArr = [];
-								for(var i = 3; i <= itemArray.length; i++) {
-									var forthUl = false;
-									if (itemArray[i] && itemArray[i].trim() != "") {
-										newArr.push(itemArray[i]);
-										if(i == 3 && array3.indexOf(itemArray[i]) != 0) {
-											if (forthUl) {
-												$HTML += '</ul>';
-												$HTML += '</li>';
+								if (typeof(item) != 'boolean') {
+									var itemArray = item.split("/");
+									var newArr = [];
+									for(var i = 3; i <= itemArray.length; i++) {
+										var forthUl = false;
+										if (itemArray[i] && itemArray[i].trim() != "") {
+											newArr.push(itemArray[i]);
+											if(i == 3 && array3.indexOf(itemArray[i]) != 0) {
+												if (forthUl) {
+													$HTML += '</ul>';
+													$HTML += '</li>';
+												}
+												$HTML += '<li><span class="caret">'+ itemArray[i] +'</span>';
+												array3.push(itemArray[i]);
 											}
-											$HTML += '<li><span class="caret">'+ itemArray[i] +'</span>';
-											array3.push(itemArray[i]);
-										}
-										if(i == 4 && array4.indexOf(itemArray[i]) != 0) {
-											forthUl = false;
-											$HTML += '<ul class="nested">';
-											$HTML += '<li>'+ itemArray[i] +'</li>';
-											array4.push(itemArray[i]);
+											if(i == 4 && array4.indexOf(itemArray[i]) != 0) {
+												forthUl = false;
+												$HTML += '<ul class="nested">';
+												$HTML += '<li>'+ itemArray[i] +'</li>';
+												array4.push(itemArray[i]);
+											}
 										}
 									}
+									arr.push(newArr);
+									var $explodedVal = item.split("/");
+									var $lastVal = $explodedVal[$explodedVal.length - 1].trim();
+									var v = ($lastVal != '') ? '<li class="file badge badge-success"><i class="fa fa-file" aria-hidden="true"></i> '+$lastVal+'</li>' : '<li class="folder badge badge-primary"><i class="fa fa-folder" aria-hidden="true"></i> '+$explodedVal[$explodedVal.length - 2].trim()+'</li>';
+									$("#folder_list").append(v);
 								}
-								arr.push(newArr);
-								var $explodedVal = item.split("/");
-								var $lastVal = $explodedVal[$explodedVal.length - 1].trim();
-								var v = ($lastVal != '') ? '<li class="file badge badge-success"><i class="fa fa-file" aria-hidden="true"></i> '+$lastVal+'</li>' : '<li class="folder badge badge-primary"><i class="fa fa-folder" aria-hidden="true"></i> '+$explodedVal[$explodedVal.length - 2].trim()+'</li>';
-								$("#folder_list").append(v);
 							});
 						}
-						// 								console.log(arr);
-						// 								$("#folder_list").append(v);
 					});
 				}
 			},

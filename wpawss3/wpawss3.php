@@ -21,10 +21,8 @@ define( 'WPS3_PLUGIN_NAME', trim( dirname( WPS3_PLUGIN_BASENAME ), '/' ) );
 
 define( 'WPS3_PLUGIN_DIR', untrailingslashit( dirname( WPS3_PLUGIN ) ) );
 
-function __construct() {
-	add_action('init', array($this, 'wps3_records_modifymenu'));
-}
-register_activation_hook(__FILE__, 'wps3_records_modifymenu');
+
+// register_activation_hook(__FILE__, 'wps3_records_modifymenu');
 
 add_action('admin_menu','wps3_records_modifymenu');
 
@@ -103,4 +101,5 @@ require_once WPS3_PLUGIN_DIR . '/includes/functions.php';
 require_once WPS3_PLUGIN_DIR . '/front/index.php';
 require_once WPS3_PLUGIN_DIR . '/front/folder-list.php';
 require_once WPS3_PLUGIN_DIR . '/front/process.php';
-require_once WPS3_PLUGIN_DIR . '/classes/magic.php';
+require_once WPS3_PLUGIN_DIR . '/front/add-meta.php';
+require_once WPS3_PLUGIN_DIR . '/classes/magicWP.php';

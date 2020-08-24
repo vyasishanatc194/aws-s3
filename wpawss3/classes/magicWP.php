@@ -32,8 +32,12 @@ class magicWP {
         $res = AwsS3WP::getListOfBuckets($bucket, $prefix);
         return $res;
     }
-    
-    static function getAllFolderDB($bucket, $prefix) {
+	
+	/**
+     * function to Get @FOLDER_STATUS_COMPLETED folder list.
+     */
+	
+	static function getAllFolderDB($bucket, $prefix) {
 		
 		$userId = 1;
 		if( is_user_logged_in() ) {
@@ -53,7 +57,7 @@ class magicWP {
 		
 	    if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_folders(@CRUD_READ, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE, $par_idUser, @FOLDER_STATUS_COMPLETED  , @PAR_NONE)")) {
 			
-		//if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_folders(@CRUD_READ, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE, $par_idUser, @FOLDER_STATUS_FILE_UPLOAD  , @PAR_NONE)")) {
+	//	if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_folders(@CRUD_READ, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE, $par_idUser, @FOLDER_STATUS_FILE_UPLOAD  , @PAR_NONE)")) {
 		
 			while (mysqli_more_results($MyConnection)) {
 
@@ -74,6 +78,10 @@ class magicWP {
 		}		
 	 return $result;
     }
+	
+	/**
+     * function to Get File based on folder id.
+     */
 	
 	static function getAllFileDB($bucket, $prefix, $folderhas) {
 		
@@ -152,7 +160,7 @@ if (!empty($_REQUEST) && !empty($_REQUEST['newfoldername'])) {
     $newFolderName = $_REQUEST['newfoldername'];
     $skip = $_REQUEST['skip'];
     $bucket = $_REQUEST['bucket'];
-    $response = Magic::createFolderCB($newFolderName, $bucket, $skip);
+    $response = magicWP::createFolderCB($newFolderName, $bucket, $skip);
     if ($response['success']) {
         $folderNameArr = explode("/", $newFolderName);
         $response['data'] = [
@@ -170,7 +178,7 @@ if (!empty($_REQUEST) && !empty($_REQUEST['newfoldername'])) {
 if (!empty($_REQUEST['getFolderList'])) {
     $bucket = $_REQUEST['bucket'];
     $desti = $_REQUEST['desti'];
-    $newResposne = Magic::getAllFolderCB($bucket, $desti);
+    $newResposne = magicWP::getAllFolderCB($bucket, $desti);
     $htmlArr = [];
     if ($newResposne) {
         foreach($newResposne as $key=>$val) {
