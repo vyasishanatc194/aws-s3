@@ -8,24 +8,6 @@ function wpawss3_add_meta_data() {
 	}
     $bucket = get_option('wpawss3_s3_bucket');
 
-
-    $dbname = get_option('wpawss3_db_name');
-	$servername = "localhost:3306";
-	$username = 'wpDataTables';
-	$password = 'd903kdas;l390-f$jki43 i-0233kd023;% IKO3($*#kjdl';
-
-    $conn = new PDO("mysql:host=$servername;dbname=processing", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $sql_stmt = "SELECT DISTINCT idSwath FROM processing.prs_files_metadata_swath"; 
-    $stmt = $conn->prepare($sql_stmt);
-	$stmt->execute();
-	$results = $stmt->fetchAll();
-	$swathArray = [];
-	foreach($results as $result) {
-	    $swathArray[] =  $result['idSwath'];
-	}
-	
-
     ?>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap.min.css">    
@@ -132,6 +114,7 @@ function wpawss3_add_meta_data() {
 <script type="text/javascript">
 
 	getCompletedFolderList();
+	getSwathList();
 	jQuery(".mode_radio").hide();
 	jQuery(".select_file").hide();
 	jQuery(".has_swath").hide();
@@ -195,11 +178,13 @@ function wpawss3_add_meta_data() {
 		uncheckSwathCreatedRadio();
 		if(jQuery(this).val() == "@FILE_METADATA_ISSWATH_UPLOADED"){
 			jQuery(".swath_created_radio").show();
+			jQuery("#save_record").hide();
 		}else{
 			jQuery(".swath_created_radio").hide();
 			jQuery(".select_swathid").hide();
 			jQuery(".swathtable").hide();
 			jQuery("#swathTable").remove();
+			jQuery("#save_record").show();
 		}
 	});
 
@@ -372,6 +357,7 @@ function wpawss3_add_meta_data() {
                 ele.setAttribute('type', 'number');
                 ele.setAttribute('name', 'par_startMass[]');
                 ele.setAttribute('required', 'true');
+                ele.setAttribute('step', '0.001');
                 ele.setAttribute('value', '');
 
                 td.appendChild(ele);
@@ -381,6 +367,7 @@ function wpawss3_add_meta_data() {
                 ele.setAttribute('type', 'number');
                 ele.setAttribute('name', 'par_stopMass[]');
                 ele.setAttribute('required', 'true');
+                ele.setAttribute('step', '0.001');
                 ele.setAttribute('value', '');
 
                 td.appendChild(ele);
@@ -390,6 +377,7 @@ function wpawss3_add_meta_data() {
                 ele.setAttribute('type', 'number');
                 ele.setAttribute('name', 'par_ces[]');
                 ele.setAttribute('required', 'true');
+                ele.setAttribute('step', '0.001');
                 ele.setAttribute('value', '');
 
                 td.appendChild(ele);
@@ -415,6 +403,7 @@ function wpawss3_add_meta_data() {
     }
 
     jQuery("#add_file_meta_data_form").submit(function(e) {
+
     e.preventDefault();
 
     var folderhas = jQuery("#folder").val();
@@ -423,80 +412,125 @@ function wpawss3_add_meta_data() {
     var par_isSwath = jQuery(".par_isSwath:checked").val();
     var swath_created = jQuery(".swath_created:checked").val();
     var par_idSwath = jQuery("#par_idSwath").val();
-    
-
-	    if(swath_created == 1){
+		
+		if(par_isSwath == "@FILE_METADATA_ISSWATH_UPLOADED"){
+			if(swath_created == 1){
 
 			  	$.ajax({
-	            url: pw1_script_vars.ajaxurl,
-	            dataType: "json",
-	            type: "POST",
-	            error: function(e){},
-	            data: {
-	                action: 'add_meta_for_existing_swath',
-	                security: pw1_script_vars.security,
-	                folderhas: folderhas,
-	                filehas: filehas,
-	                mode: mode,
-	                par_isSwath: par_isSwath,
-	                swath_created: swath_created,
-	                par_idSwath: par_idSwath,
+		            url: pw1_script_vars.ajaxurl,
+		            dataType: "json",
+		            type: "POST",
+		            error: function(e){},
+		            data: {
+		                action: 'add_meta_for_existing_swath',
+		                security: pw1_script_vars.security,
+		                folderhas: folderhas,
+		                filehas: filehas,
+		                mode: mode,
+		                par_isSwath: par_isSwath,
+		                swath_created: swath_created,
+		                par_idSwath: par_idSwath,
 
-	            },
-	            beforeSend: function() {},
-	            success: function( result, xhr ) {
-					if (result.data.success) {	
-						toastr.success(result.data.data.message);
-						$('#folder option:first').prop('selected',true);
-						    uncheckModeRadio();
-					    	uncheckHasSwathRadio();
-					    	uncheckSwathCreatedRadio();
-					    	jQuery(".mode_radio").hide();
-							jQuery(".select_file").hide();
-							jQuery(".has_swath").hide();
-							jQuery(".swath_created_radio").hide();
-							jQuery(".select_swathid").hide();
-							jQuery(".swathtable").hide();
-							jQuery("#save_record").hide();
-					}
-				},
-	            complate: function() {}
-	        });
+		            },
+		            beforeSend: function() {},
+		            success: function( result, xhr ) {
+						if (result.data.success) {	
+							toastr.success(result.data.data.message);
+							$('#folder option:first').prop('selected',true);
+							    uncheckModeRadio();
+						    	uncheckHasSwathRadio();
+						    	uncheckSwathCreatedRadio();
+						    	getSwathList();
+						    	jQuery(".mode_radio").hide();
+								jQuery(".select_file").hide();
+								jQuery(".has_swath").hide();
+								jQuery(".swath_created_radio").hide();
+								jQuery(".select_swathid").hide();
+								jQuery(".swathtable").hide();
+								jQuery("#save_record").hide();
+						}
+					},
+		            complate: function() {}
+		        });
 	    
-	    }if(swath_created == 0){
+		    }
+		    if(swath_created == 0){
 
-	    	var par_expIndex =  jQuery("input[name='par_expIndex[]']").map(function(){return $(this).val();}).get();
-	    	var par_startMass =  jQuery("input[name='par_startMass[]']").map(function(){return $(this).val();}).get();
-	    	var par_stopMass =  jQuery("input[name='par_stopMass[]']").map(function(){return $(this).val();}).get();
-	    	var par_ces =  jQuery("input[name='par_ces[]']").map(function(){return $(this).val();}).get();
+		    	var par_expIndex =  jQuery("input[name='par_expIndex[]']").map(function(){return $(this).val();}).get();
+		    	var par_startMass =  jQuery("input[name='par_startMass[]']").map(function(){return $(this).val();}).get();
+		    	var par_stopMass =  jQuery("input[name='par_stopMass[]']").map(function(){return $(this).val();}).get();
+		    	var par_ces =  jQuery("input[name='par_ces[]']").map(function(){return $(this).val();}).get();
 
-	    	$.ajax({
-	            url: pw1_script_vars.ajaxurl,
-	            dataType: "json",
-	            type: "POST",
-	            error: function(e){},
-	            data: {
-	                action: 'add_meta_for_new_swath',
-	                security: pw1_script_vars.security,
-	                folderhas: folderhas,
-	                filehas: filehas,
-	                mode: mode,
-	                par_isSwath: par_isSwath,
-	                swath_created: swath_created,
-	                par_expIndex:par_expIndex,
-	                par_startMass:par_startMass,
-	                par_stopMass:par_stopMass,
-	                par_ces:par_ces,
+		    	$.ajax({
+		            url: pw1_script_vars.ajaxurl,
+		            dataType: "json",
+		            type: "POST",
+		            error: function(e){},
+		            data: {
+		                action: 'add_meta_for_new_swath',
+		                security: pw1_script_vars.security,
+		                folderhas: folderhas,
+		                filehas: filehas,
+		                mode: mode,
+		                par_isSwath: par_isSwath,
+		                swath_created: swath_created,
+		                par_expIndex:par_expIndex,
+		                par_startMass:par_startMass,
+		                par_stopMass:par_stopMass,
+		                par_ces:par_ces,
 
-	            },
-	            beforeSend: function() {},
-	            success: function( result, xhr ) {
+		            },
+		            beforeSend: function() {},
+		            success: function( result, xhr ) {
+						if (result.data.success) {	
+							toastr.success(result.data.data.message);
+							$('#folder option:first').prop('selected',true);
+							    uncheckModeRadio();
+						    	uncheckHasSwathRadio();
+						    	uncheckSwathCreatedRadio();
+						    	getSwathList();
+						    	jQuery(".mode_radio").hide();
+								jQuery(".select_file").hide();
+								jQuery(".has_swath").hide();
+								jQuery(".swath_created_radio").hide();
+								jQuery(".select_swathid").hide();
+								jQuery(".swathtable").hide();
+								jQuery("#save_record").hide();
+						}
+					},
+		            complate: function() {}
+		        });
+
+		    }
+		}else{
+
+			var folderhas = jQuery("#folder").val();
+			var filehas = jQuery("#file").val();
+			var mode = jQuery(".mode:checked").val();
+			var par_isSwath = jQuery(".par_isSwath:checked").val();
+
+			$.ajax({
+			    url: pw1_script_vars.ajaxurl,
+			    dataType: "json",
+			    type: "POST",
+			    error: function(e){},
+			    data: {
+			        action: 'add_meta_without_swath',
+			        security: pw1_script_vars.security,
+			        folderhas: folderhas,
+			        filehas: filehas,
+			        mode: mode,
+			        par_isSwath: par_isSwath,
+			    },
+			    beforeSend: function() {},
+			    success: function( result, xhr ) {
 					if (result.data.success) {	
 						toastr.success(result.data.data.message);
 						$('#folder option:first').prop('selected',true);
 						    uncheckModeRadio();
 					    	uncheckHasSwathRadio();
 					    	uncheckSwathCreatedRadio();
+					    	getSwathList();
 					    	jQuery(".mode_radio").hide();
 							jQuery(".select_file").hide();
 							jQuery(".has_swath").hide();
@@ -506,17 +540,40 @@ function wpawss3_add_meta_data() {
 							jQuery("#save_record").hide();
 					}
 				},
-	            complate: function() {}
-	        });
+			    complate: function() {}
+			});
 
-
-
-
-
-	    }
+		}
     
 	});
 
+    function getSwathList(){
+    	$.ajax({
+            url: pw1_script_vars.ajaxurl,
+            dataType: "json",
+            type: "POST",
+            error: function(e){},
+            data: {
+                action: 'get_swath_ids',
+                security: pw1_script_vars.security,
+                
+
+            },
+            beforeSend: function() {},
+            success: function( result, xhr ) {
+				if (result.data.success) {	
+					console.log(result.data);	
+					html = "";
+					$.each(result.data.data, function(i, item) {
+						html += "<option value='"+item+"'>"+item+"</option>";					
+					});
+					jQuery("#par_idSwath").html(html);
+				}
+			},
+            complate: function() {}
+        });
+    }
+    
 </script>
 <?php
 }

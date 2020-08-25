@@ -285,6 +285,17 @@ function wpawss3_process() {
 				  	jQuery("#save_record").hide();
 				  	jQuery("#comment").val("");
 				  	jQuery(".comment_process").hide();
+				}else{
+					toastr.error(result.data.data.message);
+					$('#folder option:first').prop('selected',true);
+					jQuery('input[name="process"]').prop('checked', false);
+				  	jQuery('input[name="select_app"]').prop('checked', false);
+				  	jQuery(".select_file").hide();
+				  	jQuery(".process_radio").hide();
+				  	jQuery(".select_app_radio").hide();
+				  	jQuery("#save_record").hide();
+				  	jQuery("#comment").val("");
+				  	jQuery(".comment_process").hide();
 				}
 			},
             complate: function() {}

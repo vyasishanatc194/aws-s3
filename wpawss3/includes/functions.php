@@ -427,7 +427,7 @@ function add_meta_for_existing_swath() {
 		
 		$result['success'] = true;
 		$result['data'] = [
-			'message' => 'Meta added for existing swath Successfully.',
+			'message' => 'Added file meta with existing swath successfully.',
 		];
 		wp_send_json_success( $result );
 		mysqli_close($MyConnection);
@@ -462,28 +462,51 @@ function add_meta_for_new_swath() {
 	$par_ces = $_POST['par_ces'];
 	
 	$j = count($par_expIndex);
-// 	print_r($_POST);
-// 	print_r($j);
-	
+ 	
 	$servername = get_option('wpawss3_host');
 	$username = get_option('wpawss3_username');
 	$password = get_option('wpawss3_password');
 	$dbname = get_option('wpawss3_db_name');
 
 	$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
+	mysqli_multi_query($MyConnection, "CALL get_constants()");
 	
+	$idSwath = NULL;
 	
 	for ($i = 0; $i <= $j-1; $i++) {
 	  	if($i == 0){
-			if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_files_metadata_swath(@CRUD_CREATE , @PAR_NONE, $par_startMass[$i], $par_stopMass[$i], $par_ces[$i], @PAR_NONE)")) {
-				echo 'hii';
-				exit;
-		
+				
+			if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_files_metadata_swath(@CRUD_CREATE, NULL, $par_expIndex[$i], $par_startMass[$i], $par_stopMass[$i], $par_ces[$i], NULL)")) {
+				
 				while (mysqli_more_results($MyConnection)) {
 
 				   if ($results = mysqli_store_result($MyConnection)) {
-						  print_r($results);
-					   
+						  
+						  while ($row = mysqli_fetch_assoc($results)) {
+								$idSwath = $row['idSwath'];
+							  	$data[] = $row;
+						  }
+						  mysqli_free_result($results);
+				   }
+				   mysqli_next_result($MyConnection);
+				}
+	
+				
+			}else{
+				
+				 $result['success'] = false;
+        		 $result['message'] = mysqli_error($MyConnection);
+				 wp_send_json_error( $result );
+        
+			}
+		}else{
+			
+			if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_files_metadata_swath(@CRUD_CREATE, $idSwath, $par_expIndex[$i], $par_startMass[$i], $par_stopMass[$i], $par_ces[$i], NULL)")) {
+				
+				while (mysqli_more_results($MyConnection)) {
+
+				   if ($results = mysqli_store_result($MyConnection)) {
+						  
 						  while ($row = mysqli_fetch_assoc($results)) {
 								$data[] = $row;
 						  }
@@ -492,20 +515,49 @@ function add_meta_for_new_swath() {
 				   mysqli_next_result($MyConnection);
 				}
 	
-				print_r($data);
-				exit;
+				
+			}else{
+				
+				 $result['success'] = false;
+        		 $result['message'] = mysqli_error($MyConnection);
+				 wp_send_json_error( $result );
+        
 			}
-		}else{
-		
 			
 		}
 		
 	}
 	
+	if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_files_metadata(@CRUD_CREATE, '".$par_idFile."', $par_mode, $par_isSwath, $idSwath, NULL)")) {
+		
+		$result['success'] = true;
+		$result['data'] = [
+			'message' => 'Added file meta with new swath successfully.',
+		];
+		wp_send_json_success( $result );
+		mysqli_close($MyConnection);
+	}
+	wp_send_json_error( $result );
 	
+}
+
+add_action('wp_ajax_add_meta_for_new_swath', 'add_meta_for_new_swath');
+add_action('wp_ajax_nopriv_add_meta_for_new_swath', 'add_meta_for_new_swath');
+
+
+function add_meta_without_swath()
+{	
+  	$result = [];
+	// default response
+	$result['success'] = false;
+	$result['data'] = [
+		'message' => 'Network error.',
+	];
 	
-	exit;
-	
+	$folderhas = $_POST['folderhas'];
+	$par_idFile = $_POST['filehas'];
+	$par_mode = $_POST['mode'];
+	$par_isSwath = $_POST['par_isSwath'];
 	
 	$servername = get_option('wpawss3_host');
 	$username = get_option('wpawss3_username');
@@ -515,19 +567,46 @@ function add_meta_for_new_swath() {
 	$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
 	mysqli_multi_query($MyConnection, "CALL get_constants()");
 
-	if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_files_metadata(@CRUD_CREATE, '".$par_idFile."', $par_mode, $par_isSwath, $par_idSwath, NULL)")) {
+	if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_files_metadata(@CRUD_CREATE, '".$par_idFile."', $par_mode, $par_isSwath, NULL, NULL)")) {
 		
 		$result['success'] = true;
 		$result['data'] = [
-			'message' => 'Meta added for existing swath Successfully.',
+			'message' => 'Added file meta without swath successfully.',
 		];
 		wp_send_json_success( $result );
 		mysqli_close($MyConnection);
 	}
 	
 	wp_send_json_error( $result );
-}
+	
+	
+}	
+add_action('wp_ajax_add_meta_without_swath', 'add_meta_without_swath');
+add_action('wp_ajax_nopriv_add_meta_without_swath', 'add_meta_without_swath');
 
-add_action('wp_ajax_add_meta_for_new_swath', 'add_meta_for_new_swath');
-add_action('wp_ajax_nopriv_add_meta_for_new_swath', 'add_meta_for_new_swath');
 
+function get_swath_ids()
+{
+	check_ajax_referer('wpawss3', 'security');
+    $dbname = get_option('wpawss3_db_name');
+	$servername = "localhost:3306";
+	$username = 'wpDataTables';
+	$password = 'd903kdas;l390-f$jki43 i-0233kd023;% IKO3($*#kjdl';
+
+    $conn = new PDO("mysql:host=$servername;dbname=processing", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $sql_stmt = "SELECT DISTINCT idSwath FROM processing.prs_files_metadata_swath"; 
+    $stmt = $conn->prepare($sql_stmt);
+	$stmt->execute();
+	$datas = $stmt->fetchAll();
+	$swathArray = [];
+	foreach($datas as $data) {
+	    $swathArray[] =  $data['idSwath'];
+	}
+	
+	$result['success'] = true;
+	$result['data'] = $swathArray;
+	wp_send_json_success( $result );
+}	
+add_action('wp_ajax_get_swath_ids', 'get_swath_ids');
+add_action('wp_ajax_nopriv_get_swath_ids', 'get_swath_ids');
