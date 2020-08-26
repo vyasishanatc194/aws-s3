@@ -99,7 +99,7 @@ function wpawss3_add_meta_data() {
 
 	            <div class="form-group swathtable">
 	            	<p>
-						<input type="button" id="addRow" value="Add New" />
+						<input type="button" id="addRow" class="btn btn-primary" value="Add New" />
 					</p>
 					<div id="cont"></div>
 
@@ -336,7 +336,7 @@ function wpawss3_add_meta_data() {
                 // set input attributes.
                 button.setAttribute('type', 'button');
                 button.setAttribute('value', 'Remove');
-
+                button.setAttribute('class', 'btn btn-danger');
                 // add button's 'onclick' event.
                 button.setAttribute('onclick', 'removeRow(this)');
 
@@ -346,7 +346,7 @@ function wpawss3_add_meta_data() {
             	var ele = document.createElement('input');
                 ele.setAttribute('type', 'number');
                 ele.setAttribute('name', 'par_expIndex[]');
-                ele.setAttribute('class', 'par_expIndex');
+                ele.setAttribute('class', 'par_expIndex form-control');
                 ele.setAttribute('value', rowCnt);
                 ele.setAttribute('readonly', 'readonly');
                 td.appendChild(ele);
@@ -356,6 +356,7 @@ function wpawss3_add_meta_data() {
                 var ele = document.createElement('input');
                 ele.setAttribute('type', 'number');
                 ele.setAttribute('name', 'par_startMass[]');
+                ele.setAttribute('class', 'form-control');
                 ele.setAttribute('required', 'true');
                 ele.setAttribute('step', '0.001');
                 ele.setAttribute('value', '');
@@ -366,6 +367,7 @@ function wpawss3_add_meta_data() {
                 var ele = document.createElement('input');
                 ele.setAttribute('type', 'number');
                 ele.setAttribute('name', 'par_stopMass[]');
+                ele.setAttribute('class', 'form-control');
                 ele.setAttribute('required', 'true');
                 ele.setAttribute('step', '0.001');
                 ele.setAttribute('value', '');
@@ -376,6 +378,7 @@ function wpawss3_add_meta_data() {
                 var ele = document.createElement('input');
                 ele.setAttribute('type', 'number');
                 ele.setAttribute('name', 'par_ces[]');
+                ele.setAttribute('class', 'form-control');
                 ele.setAttribute('required', 'true');
                 ele.setAttribute('step', '0.001');
                 ele.setAttribute('value', '');

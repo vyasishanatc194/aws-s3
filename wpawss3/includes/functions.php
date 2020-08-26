@@ -333,36 +333,59 @@ function store_process() {
 	mysqli_multi_query($MyConnection, "CALL get_constants()");
 	
 		if($process_radio == 'process_file'){
-
-			if(mysqli_multi_query($MyConnection, "CALL prs_app_file('".$filehas."', $idAppPar, $par_idApp, $userId, '".$comment."')")) {
-				
+			
+			$output = shell_exec("sh /home/Actions/Actions.sh --action 2 --idFile '".$filehas."' --idAppPar $idAppPar --idApp $par_idApp --idUser $userId --label '".$comment."'");
+			if($output){
 				$result['success'] = true;
 				$result['data'] = [
-					'message' => 'File processed Successfully.',
+					'message' => $output,
 				];
-				wp_send_json_success( $result );
-				mysqli_close($MyConnection);
+				wp_send_json_success($result);
 			}else{
-				 $result['success'] = false;
-        		 $result['message'] = mysqli_error($MyConnection);
-				 wp_send_json_error( $result );
-        
+				wp_send_json_error($result);
 			}
+			
+// 			if(mysqli_multi_query($MyConnection, "CALL prs_app_file('".$filehas."', $idAppPar, $par_idApp, $userId, '".$comment."')")) {
+				
+// 				$result['success'] = true;
+// 				$result['data'] = [
+// 					'message' => 'File processed Successfully.',
+// 				];
+// 				wp_send_json_success( $result );
+// 				mysqli_close($MyConnection);
+// 			}else{
+// 				 $result['success'] = false;
+//         		 $result['message'] = mysqli_error($MyConnection);
+// 				 wp_send_json_error( $result );
+        
+// 			}
 
 		}else if($process_radio == 'process_folder'){
-			if(mysqli_multi_query($MyConnection, "CALL prs_app_folder('".$folderhas."', $idAppPar, $par_idApp, $userId,  '".$comment."')")) {
+			
+			$output = shell_exec("sh /home/Actions/Actions.sh --action 3 --idFolder '".$folderhas."' --idAppPar $idAppPar --idApp $par_idApp --idUser $userId --label '".$comment."'");
+			if($output){
 				$result['success'] = true;
 				$result['data'] = [
-					'message' => 'Folder processed Successfully.',
+					'message' => $output,
 				];
-				wp_send_json_success( $result );
-				mysqli_close($MyConnection);
+				wp_send_json_success($result);
 			}else{
-				 $result['success'] = false;
-        		 $result['message'] = mysqli_error($MyConnection);
-				 wp_send_json_error( $result );
-        
+				wp_send_json_error($result);
 			}
+			
+// 			if(mysqli_multi_query($MyConnection, "CALL prs_app_folder('".$folderhas."', $idAppPar, $par_idApp, $userId,  '".$comment."')")) {
+// 				$result['success'] = true;
+// 				$result['data'] = [
+// 					'message' => 'Folder processed Successfully.',
+// 				];
+// 				wp_send_json_success( $result );
+// 				mysqli_close($MyConnection);
+// 			}else{
+// 				 $result['success'] = false;
+//         		 $result['message'] = mysqli_error($MyConnection);
+// 				 wp_send_json_error( $result );
+        
+// 			}
 
 		}
 		
@@ -372,32 +395,6 @@ function store_process() {
 add_action('wp_ajax_store_process', 'store_process');
 add_action('wp_ajax_nopriv_store_process', 'store_process');
 
-
-function process_ajax() {
-	check_ajax_referer('wpawss3', 'security');
-	$insertdata = [];
-	$result = [];
-
-	// default response
-	$result['success'] = false;
-	$result['data'] = [
-		'message' => 'Network error.',
-	];
-	
-	if (!empty($_POST) && !empty($_POST['hrefVal'])) {    
-		$hrefVal = $_POST['hrefVal'];
-		$cmd = 'python3 /home/Action/Actions.py --action PROCESS_FOLDER --idFolder '.$hrefVal;
-		if ($response['success']) {
-			$response['data'] = $output;
-			wp_send_json_success($response);
-		} else {
-			wp_send_json_error($response['msg']);
-		}
-		die;
-	}
-}
-add_action('wp_ajax_process_ajax', 'process_ajax');
-add_action('wp_ajax_nopriv_process_ajax', 'process_ajax');
 
 function add_meta_for_existing_swath() {
 	check_ajax_referer('wpawss3', 'security');
@@ -610,3 +607,42 @@ function get_swath_ids()
 }	
 add_action('wp_ajax_get_swath_ids', 'get_swath_ids');
 add_action('wp_ajax_nopriv_get_swath_ids', 'get_swath_ids');
+
+
+
+function process_ajax() {
+	check_ajax_referer('wpawss3', 'security');
+	$insertdata = [];
+	$result = [];
+
+	// default response
+	$result['success'] = false;
+	$result['data'] = [
+		'message' => 'Network error.',
+	];
+	
+	if (!empty($_POST) && !empty($_POST['hrefVal'])) {    
+		$hrefVal = $_POST['hrefVal'];
+		
+		$output = shell_exec('sh /home/Actions/Actions.sh --action 1 --idFolder '.$hrefVal);
+		if($output){
+			$result['success'] = true;
+			$result['data'] = $output;
+			wp_send_json_success($result);
+		}else{
+			wp_send_json_error($result);
+		}
+// 		echo "<pre>$output</pre>";
+		
+// 		$cmd = 'python3 /home/Action/Actions.py --action PROCESS_FOLDER --idFolder '.$hrefVal;
+// 		if ($response['success']) {
+// 			$response['data'] = $output;
+// 			wp_send_json_success($response);
+// 		} else {
+// 			wp_send_json_error($response['msg']);
+// 		}
+		die;
+	}
+}
+add_action('wp_ajax_process_ajax', 'process_ajax');
+add_action('wp_ajax_nopriv_process_ajax', 'process_ajax');
