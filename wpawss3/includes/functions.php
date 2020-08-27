@@ -334,58 +334,58 @@ function store_process() {
 	
 		if($process_radio == 'process_file'){
 			
-			$output = shell_exec("sh /home/Actions/Actions.sh --action 2 --idFile '".$filehas."' --idAppPar $idAppPar --idApp $par_idApp --idUser $userId --label '".$comment."'");
-			if($output){
-				$result['success'] = true;
-				$result['data'] = [
-					'message' => $output,
-				];
-				wp_send_json_success($result);
-			}else{
-				wp_send_json_error($result);
-			}
-			
-// 			if(mysqli_multi_query($MyConnection, "CALL prs_app_file('".$filehas."', $idAppPar, $par_idApp, $userId, '".$comment."')")) {
-				
+// 			$output = shell_exec("sh /home/Actions/Actions.sh --action 2 --idFile '".$filehas."' --idAppPar $idAppPar --idApp $par_idApp --idUser $userId --label '".$comment."'");
+// 			if($output){
 // 				$result['success'] = true;
 // 				$result['data'] = [
-// 					'message' => 'File processed Successfully.',
+// 					'message' => $output,
 // 				];
-// 				wp_send_json_success( $result );
-// 				mysqli_close($MyConnection);
+// 				wp_send_json_success($result);
 // 			}else{
-// 				 $result['success'] = false;
-//         		 $result['message'] = mysqli_error($MyConnection);
-// 				 wp_send_json_error( $result );
-        
+// 				wp_send_json_error($result);
 // 			}
+			
+			if(mysqli_multi_query($MyConnection, "CALL prs_app_file('".$filehas."', $idAppPar, $par_idApp, $userId, '".$comment."')")) {
+				
+				$result['success'] = true;
+				$result['data'] = [
+					'message' => 'File processed Successfully.',
+				];
+				wp_send_json_success( $result );
+				mysqli_close($MyConnection);
+			}else{
+				 $result['success'] = false;
+        		 $result['message'] = mysqli_error($MyConnection);
+				 wp_send_json_error( $result );
+        
+			}
 
 		}else if($process_radio == 'process_folder'){
 			
-			$output = shell_exec("sh /home/Actions/Actions.sh --action 3 --idFolder '".$folderhas."' --idAppPar $idAppPar --idApp $par_idApp --idUser $userId --label '".$comment."'");
-			if($output){
-				$result['success'] = true;
-				$result['data'] = [
-					'message' => $output,
-				];
-				wp_send_json_success($result);
-			}else{
-				wp_send_json_error($result);
-			}
-			
-// 			if(mysqli_multi_query($MyConnection, "CALL prs_app_folder('".$folderhas."', $idAppPar, $par_idApp, $userId,  '".$comment."')")) {
+// 			$output = shell_exec("sh /home/Actions/Actions.sh --action 3 --idFolder '".$folderhas."' --idAppPar $idAppPar --idApp $par_idApp --idUser $userId --label '".$comment."'");
+// 			if($output){
 // 				$result['success'] = true;
 // 				$result['data'] = [
-// 					'message' => 'Folder processed Successfully.',
+// 					'message' => $output,
 // 				];
-// 				wp_send_json_success( $result );
-// 				mysqli_close($MyConnection);
+// 				wp_send_json_success($result);
 // 			}else{
-// 				 $result['success'] = false;
-//         		 $result['message'] = mysqli_error($MyConnection);
-// 				 wp_send_json_error( $result );
-        
+// 				wp_send_json_error($result);
 // 			}
+			
+			if(mysqli_multi_query($MyConnection, "CALL prs_app_folder('".$folderhas."', $idAppPar, $par_idApp, $userId,  '".$comment."')")) {
+				$result['success'] = true;
+				$result['data'] = [
+					'message' => 'Folder processed Successfully.',
+				];
+				wp_send_json_success( $result );
+				mysqli_close($MyConnection);
+			}else{
+				 $result['success'] = false;
+        		 $result['message'] = mysqli_error($MyConnection);
+				 wp_send_json_error( $result );
+        
+			}
 
 		}
 		
@@ -624,14 +624,37 @@ function process_ajax() {
 	if (!empty($_POST) && !empty($_POST['hrefVal'])) {    
 		$hrefVal = $_POST['hrefVal'];
 		
-		$output = shell_exec('sh /home/Actions/Actions.sh --action 1 --idFolder '.$hrefVal);
-		if($output){
+		
+		$servername = get_option('wpawss3_host');
+		$username = get_option('wpawss3_username');
+		$password = get_option('wpawss3_password');
+		$dbname = get_option('wpawss3_db_name');
+
+		$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
+		mysqli_multi_query($MyConnection, "CALL get_constants()");
+
+		if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_folders(@CRUD_UPDATE, '".$hrefVal."', @PAR_NONE ,@PAR_NONE ,@PAR_NONE ,@PAR_NONE, @FOLDER_STATUS_PROCESSING_REQUEST, @PAR_NONE)")) {
+
 			$result['success'] = true;
-			$result['data'] = $output;
-			wp_send_json_success($result);
-		}else{
-			wp_send_json_error($result);
+			$result['data'] = [
+				'message' => 'Folder processed Successfully.',
+			];
+			wp_send_json_success( $result );
+			mysqli_close($MyConnection);
 		}
+
+		wp_send_json_error( $result );
+		
+		
+		
+// 		$output = shell_exec('sh /home/Actions/Actions.sh --action 1 --idFolder '.$hrefVal);
+// 		if($output){
+// 			$result['success'] = true;
+// 			$result['data'] = $output;
+// 			wp_send_json_success($result);
+// 		}else{
+// 			wp_send_json_error($result);
+// 		}
 // 		echo "<pre>$output</pre>";
 		
 // 		$cmd = 'python3 /home/Action/Actions.py --action PROCESS_FOLDER --idFolder '.$hrefVal;
