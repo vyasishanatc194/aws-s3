@@ -68,8 +68,11 @@ function wpawss3_process() {
 					  </label>
 					</div>
 	            </div>
-	            <input type="hidden" name="idAppPar" id="idAppPar" value="0">
-
+	            <div class="form-group select_idAppPar">
+	            	<label for="idAppPar"><?php _e('IdAppPar', 'IdAppPar')?></label>
+	                <select id="idAppPar" class="form-control" name="idAppPar">
+	                </select>
+	            </div>
 	            <div class="form-group comment_process">
 	                <label for="comment"><?php _e('Comment', 'Comment')?></label>
 	                <textarea name="comment" id="comment" maxlength="100"></textarea>
@@ -90,6 +93,8 @@ function wpawss3_process() {
 	jQuery(".select_file").hide();
 	jQuery("#save_record").hide();
 	jQuery(".comment_process").hide();
+	jQuery("#comment").val("");
+	jQuery(".select_idAppPar").hide();
 
 	jQuery( "#folder" ).change(function () {   
 		jQuery('input[name="process"]').prop('checked', false);
@@ -98,12 +103,16 @@ function wpawss3_process() {
 	  	jQuery(".select_app_radio").hide();
 	  	jQuery("#save_record").hide();
 	  	jQuery(".comment_process").hide();
+	  	jQuery("#comment").val("");
+	  	jQuery(".select_idAppPar").hide();
      if(jQuery(this).val()){
 	   jQuery(".process_radio").show();
 	  }else{
 	  	jQuery(".process_radio").hide();
 	  	jQuery(".select_app_radio").hide();
 	  	jQuery(".comment_process").hide();
+	  	jQuery("#comment").val("");
+	  	jQuery(".select_idAppPar").hide();
 	  }
 	});  
 
@@ -119,7 +128,8 @@ function wpawss3_process() {
 			jQuery(".select_file").show();
 			jQuery("#save_record").hide();
 			jQuery(".comment_process").hide();
-
+			jQuery("#comment").val("");
+			jQuery(".select_idAppPar").hide();
 		}
 	}); 
 
@@ -131,6 +141,8 @@ function wpawss3_process() {
 			jQuery("#save_record").hide();
 			jQuery(".select_app_radio").hide();
 			jQuery(".comment_process").hide();
+			jQuery("#comment").val("");
+			jQuery(".select_idAppPar").hide();
 		}
 	}); 
 
@@ -138,9 +150,11 @@ function wpawss3_process() {
 		if(jQuery(this).val()){
 			getidAppPar();
 			jQuery(".comment_process").show();
+			jQuery(".select_idAppPar").show();
 		 	jQuery("#save_record").show();
 		}else{
 			jQuery("#save_record").hide();
+			jQuery(".select_idAppPar").hide();
 		}
 	});
 
@@ -225,7 +239,7 @@ function wpawss3_process() {
     function getidAppPar(){
 
     	var par_idApp = jQuery(".select_app:checked").val();
-
+    	var html = '';
     	$.ajax({
             url: pw1_script_vars.ajaxurl,
             dataType: "json",
@@ -239,9 +253,13 @@ function wpawss3_process() {
             beforeSend: function() {},
             success: function( result, xhr ) {
 				if (result.data.success) {	
-					jQuery("#idAppPar").val(""+result.data.idAppPar+"");
-					console.log(result.data.idAppPar);
+					console.log(result.data);
+					$.each(result.data.idAppPar, function(i, item) {
+						
+						html += "<option value='"+item+"'>"+item+"</option>";					
+					});
 				}
+				jQuery("#idAppPar").html(html);
 			},
             complate: function() {}
         });
@@ -276,27 +294,19 @@ function wpawss3_process() {
             success: function( result, xhr ) {
 				if (result.data.success) {	
 					toastr.success(result.data.data.message);
-					$('#folder option:first').prop('selected',true);
-					jQuery('input[name="process"]').prop('checked', false);
-				  	jQuery('input[name="select_app"]').prop('checked', false);
-				  	jQuery(".select_file").hide();
-				  	jQuery(".process_radio").hide();
-				  	jQuery(".select_app_radio").hide();
-				  	jQuery("#save_record").hide();
-				  	jQuery("#comment").val("");
-				  	jQuery(".comment_process").hide();
 				}else{
 					toastr.error(result.data.data.message);
-					$('#folder option:first').prop('selected',true);
-					jQuery('input[name="process"]').prop('checked', false);
-				  	jQuery('input[name="select_app"]').prop('checked', false);
-				  	jQuery(".select_file").hide();
-				  	jQuery(".process_radio").hide();
-				  	jQuery(".select_app_radio").hide();
-				  	jQuery("#save_record").hide();
-				  	jQuery("#comment").val("");
-				  	jQuery(".comment_process").hide();
 				}
+				$('#folder option:first').prop('selected',true);
+				jQuery('input[name="process"]').prop('checked', false);
+			  	jQuery('input[name="select_app"]').prop('checked', false);
+			  	jQuery(".select_file").hide();
+			  	jQuery(".process_radio").hide();
+			  	jQuery(".select_app_radio").hide();
+			  	jQuery("#save_record").hide();
+			  	jQuery("#comment").val("");
+			  	jQuery(".comment_process").hide();
+			  	jQuery(".select_idAppPar").hide();
 			},
             complate: function() {}
         });

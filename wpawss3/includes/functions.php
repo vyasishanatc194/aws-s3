@@ -258,14 +258,14 @@ function get_id_app_par() {
 				   if ($results = mysqli_store_result($MyConnection)) {
 					
 						  while ($row = mysqli_fetch_assoc($results)) {
-								$data[] = $row;
+								$data[] = $row['idAppParSaf'];
 						  }
 						  mysqli_free_result($results);
 				   }
 				   mysqli_next_result($MyConnection);
 			}
 			$response['data']['message'] = '';
-			$response['idAppPar'] = $data[0]['idAppParSaf'];
+			$response['idAppPar'] = $data;
 			
 			$response['success'] = true;
 			wp_send_json_success($response);
@@ -281,14 +281,14 @@ function get_id_app_par() {
 				   if ($results = mysqli_store_result($MyConnection)) {
 					
 						  while ($row = mysqli_fetch_assoc($results)) {
-								$data[] = $row;
+								$data[] = $row['idAppParCmp'];
 						  }
 						  mysqli_free_result($results);
 				   }
 				   mysqli_next_result($MyConnection);
 			}
 			$response['data']['message'] = '';
-			$response['idAppPar'] = $data[0]['idAppParCmp'];
+			$response['idAppPar'] = $data;
 			$response['success'] = true;
 			wp_send_json_success($response);
 			mysqli_close($MyConnection);
@@ -669,3 +669,198 @@ function process_ajax() {
 }
 add_action('wp_ajax_process_ajax', 'process_ajax');
 add_action('wp_ajax_nopriv_process_ajax', 'process_ajax');
+
+
+
+function upload_status_list() {
+    check_ajax_referer('wpawss3', 'security');
+    $result['success'] = false;
+    $result['data'] = [
+        'message' => 'Network error.',
+    ];
+ 	
+// 	$servername = get_option('wpawss3_host');
+// 	$username = get_option('wpawss3_username');
+// 	$password = get_option('wpawss3_password');
+//  $dbname = get_option('wpawss3_db_name');
+	
+	
+    $dbname = get_option('wpawss3_db_name');
+	$servername = "localhost:3306";
+	$username = 'wpDataTables';
+	$password = 'd903kdas;l390-f$jki43 i-0233kd023;% IKO3($*#kjdl';
+
+    try {
+        $conn = new PDO("mysql:host=$servername;dbname=processing", $username, $password);
+		
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		try {
+            $s3 = new S3Client([
+                'version' => get_option('wpawss3_aws_version'),
+				'region'  => get_option('wpawss3_aws_region'),
+				'credentials' => [
+					'key'    => get_option('wpawss3_aws_key'),
+					'secret' => get_option('wpawss3_aws_secret_key')
+				]
+            ]);
+        } catch (\Exception $e) {
+            echo $e->getMessage() . PHP_EOL; 
+        }
+		
+		$userId = 1;
+		if( is_user_logged_in() ) {
+			$userId = get_current_user_id();
+		}
+		
+		$user = wp_get_current_user();
+		$allowed_roles = array('administrator');
+		
+		if( array_intersect($allowed_roles, $user->roles ) ) {  
+			
+		   $sql_stmt = "SELECT 
+                    PF.`folderName`, PFS.`label` as `status`, PU.`label` as idUser, BIN_TO_UUID(PF.`idFolder`) as idFolder, PFI.label as isPublic 
+                    FROM prs_folders PF 
+                    INNER JOIN prs_folders_ispublic PFI ON PFI.id = PF.isPublic
+                    INNER JOIN prs_users PU ON PU.id = PF.idUser
+                    INNER JOIN prs_folders_status PFS ON PFS.id = PF.status
+					WHERE PF.status = 1";
+		}else{
+			
+			 $sql_stmt = "SELECT 
+                    PF.`folderName`, PFS.`label` as `status`, PU.`label` as idUser, BIN_TO_UUID(PF.`idFolder`) as idFolder, PFI.label as isPublic 
+                    FROM prs_folders PF 
+                    INNER JOIN prs_folders_ispublic PFI ON PFI.id = PF.isPublic
+                    INNER JOIN prs_users PU ON PU.id = PF.idUser
+                    INNER JOIN prs_folders_status PFS ON PFS.id = PF.status
+					WHERE PF.status = 1 AND PF.idUser = $userId";
+		} 
+		
+					
+        $stmt = $conn->prepare($sql_stmt);
+        $stmt->execute();
+        $result = $stmt->fetchAll();
+		
+        foreach($result as $key=>$value) {
+            $isPublic = ($value['isPublic'] == 'Public') ? 'public/' : 'private/';
+            $userlogin = get_current_user_id().'/';
+            $folder = $value['folderName'].'/';
+            $path = $isPublic.$userlogin.$folder;
+            $objects = $s3->listObjects([
+                'Bucket' => AWS_S3_BUCKET,
+                'Prefix' => $path
+            ]);
+            $result[$key]['process'] = 0;
+            if (isset($objects['Contents'])) {
+                if (count($objects['Contents']) > 0) {
+                    $result[$key]['process'] = 1;
+                }
+            }
+        }
+        wp_send_json_success( $result );
+    } catch (\Exception $ex) {
+        $result['success'] = false;
+        $result['data'] = [
+            'message' => $ex->getMessage(),
+        ];
+        wp_send_json_error( $result );
+    }
+    
+    wp_send_json_error( $result );
+    die();
+}
+add_action('wp_ajax_upload_status_list', 'upload_status_list');
+add_action('wp_ajax_nopriv_upload_status_list', 'upload_status_list');
+
+
+
+
+function view_process_status_list() {
+    check_ajax_referer('wpawss3', 'security');
+    $result['success'] = false;
+    $result['data'] = [
+        'message' => 'Network error.',
+    ];
+ 	
+// 	$servername = get_option('wpawss3_host');
+// 	$username = get_option('wpawss3_username');
+// 	$password = get_option('wpawss3_password');
+//  $dbname = get_option('wpawss3_db_name');
+	
+	
+    $dbname = get_option('wpawss3_db_name');
+	$servername = "localhost:3306";
+	$username = 'wpDataTables';
+	$password = 'd903kdas;l390-f$jki43 i-0233kd023;% IKO3($*#kjdl';
+
+    try {
+        $conn = new PDO("mysql:host=$servername;dbname=processing", $username, $password);
+		
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		try {
+            $s3 = new S3Client([
+                'version' => get_option('wpawss3_aws_version'),
+				'region'  => get_option('wpawss3_aws_region'),
+				'credentials' => [
+					'key'    => get_option('wpawss3_aws_key'),
+					'secret' => get_option('wpawss3_aws_secret_key')
+				]
+            ]);
+        } catch (\Exception $e) {
+            echo $e->getMessage() . PHP_EOL; 
+        }
+		
+	//	$userId = 1;
+		if( is_user_logged_in() ) {
+			$userId = get_current_user_id();
+		}
+		
+		$user = wp_get_current_user();
+		$allowed_roles = array('administrator');
+		if( array_intersect($allowed_roles, $user->roles ) ) {  
+		   $sql_stmt = "SELECT * FROM `view_prs_app_process` WHERE STATUS NOT IN (4,5)";
+		}else{
+			$sql_stmt = "SELECT * FROM `view_prs_app_process` WHERE STATUS NOT IN (4,5) AND idUser = $userId";
+		} 
+		
+        $stmt = $conn->prepare($sql_stmt);
+        $stmt->execute();
+        $result = $stmt->fetchAll();
+		
+// 		 foreach($result as $key=>$value) {
+//             $isPublic = ($value['isPublic'] == 'Public') ? 'public/' : 'private/';
+//             $userlogin = get_current_user_id().'/';
+//             $folder = $value['folderName'].'/';
+//             $path = $isPublic.$userlogin.$folder;
+//             $objects = $s3->listObjects([
+//                 'Bucket' => AWS_S3_BUCKET,
+//                 'Prefix' => $path
+//             ]);
+//             $result[$key]['process'] = 0;
+//             if (isset($objects['Contents'])) {
+//                 if (count($objects['Contents']) > 0) {
+//                     $result[$key]['process'] = 1;
+//                 }
+//             }
+//         }
+	
+// 		echo '<pre>';
+// 		print_r($result);
+// 		exit;
+		
+		
+		
+       
+        wp_send_json_success( $result );
+    } catch (\Exception $ex) {
+        $result['success'] = false;
+        $result['data'] = [
+            'message' => $ex->getMessage(),
+        ];
+        wp_send_json_error( $result );
+    }
+    
+    wp_send_json_error( $result );
+    die();
+}
+add_action('wp_ajax_view_process_status_list', 'view_process_status_list');
+add_action('wp_ajax_view_process_status_list', 'view_process_status_list');
