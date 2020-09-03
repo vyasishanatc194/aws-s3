@@ -26,6 +26,9 @@ function wpawss3_view_process_status() {
 #exampleModalLabel { line-height: 0px; }
 .modal-header{ padding: 0rem 1rem; }
 .hideBtn { display:none; }
+.th.sorting {
+    min-width: 50px;
+}
 </style>
 
 
@@ -46,10 +49,24 @@ function wpawss3_view_process_status() {
                     <th>FileName</th>
                     <th>status</th>
                     <th>User</th>
+                    <th>Date Created</th>
+                    <th>Date Import Start</th>
+                    <th>IMP Version</th>
+                    <th>APP Version</th>
+                    <th>APP Label</th>
+                    <th>APP Par Label</th>
+                    <th>File Size</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -79,6 +96,14 @@ function wpawss3_view_process_status() {
                 { data: 'filename'},
                 { data: 'statusLabel' },
                 { data: 'userLabel' },
+                { data: 'dateCreate' },
+                { data: 'dateImportStart' },
+                { data: 'impVer' },
+                { data: 'appVer' },
+                { data: 'AppLabel' },
+                { data: 'AppParLabel' },
+                { data: 'filesize' },
+                
 				
             ],
             order: [[ 0, "desc" ]]

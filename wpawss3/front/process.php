@@ -253,13 +253,15 @@ function wpawss3_process() {
             beforeSend: function() {},
             success: function( result, xhr ) {
 				if (result.data.success) {	
-					console.log(result.data);
+					
 					$.each(result.data.idAppPar, function(i, item) {
 						
 						html += "<option value='"+item+"'>"+item+"</option>";					
 					});
 				}
 				jQuery("#idAppPar").html(html);
+				jQuery(".select_idAppPar label").text(result.data.label);
+					
 			},
             complate: function() {}
         });

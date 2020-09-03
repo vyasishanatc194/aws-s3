@@ -36,14 +36,22 @@ function wpawss3_uploadstatus() {
             <table id="faq_table" class="table">
                 <thead>
                 <tr>
-                    <th>folderName</th>
-                    <th>status</th>
-                    <th>idUser</th>
-                    <th>isPublic</th>
+                    <th>File Name</th>
+                    <th>File Type</th>
+                    <th>User</th>
+                    <th>Brand</th>
+                    <th>Status</th>
+                    <th>Error Type</th>
+                    <th>File Size</th>
+                    <th>File Sibling</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -71,10 +79,14 @@ function wpawss3_uploadstatus() {
                 url: pw1_script_vars.ajaxurl + '?action=upload_status_list&security='+pw1_script_vars.security
             },
             columns: [
-                { data: 'folderName',},
-                { data: 'status' },
-                { data: 'idUser' },
-                { data: 'isPublic' },
+                { data: 'filename',},
+                { data: 'filetypeLabel' },
+                { data: 'label' },
+                { data: 'brandLabel' },
+                { data: 'statusLabel' },
+                { data: 'ErrorTypeLabel' },
+                { data: 'filesize' },
+                { data: 'filesibling' },
 				
             ],
             order: [[ 0, "desc" ]]

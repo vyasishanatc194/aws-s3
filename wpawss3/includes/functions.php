@@ -266,7 +266,7 @@ function get_id_app_par() {
 			}
 			$response['data']['message'] = '';
 			$response['idAppPar'] = $data;
-			
+			$response['label'] = 'idAppParSaf';
 			$response['success'] = true;
 			wp_send_json_success($response);
 			mysqli_close($MyConnection);
@@ -289,6 +289,7 @@ function get_id_app_par() {
 			}
 			$response['data']['message'] = '';
 			$response['idAppPar'] = $data;
+			$response['label'] = 'idAppParCmp';
 			$response['success'] = true;
 			wp_send_json_success($response);
 			mysqli_close($MyConnection);
@@ -717,46 +718,32 @@ function upload_status_list() {
 		
 		if( array_intersect($allowed_roles, $user->roles ) ) {  
 			
-		   $sql_stmt = "SELECT 
-                    PF.`folderName`, PFS.`label` as `status`, PU.`label` as idUser, BIN_TO_UUID(PF.`idFolder`) as idFolder, PFI.label as isPublic 
-                    FROM prs_folders PF 
-                    INNER JOIN prs_folders_ispublic PFI ON PFI.id = PF.isPublic
-                    INNER JOIN prs_users PU ON PU.id = PF.idUser
-                    INNER JOIN prs_folders_status PFS ON PFS.id = PF.status
-					WHERE PF.status = 1";
-		}else{
+		   $sql_stmt = "SELECT * FROM `view_prs_files`";
 			
-			 $sql_stmt = "SELECT 
-                    PF.`folderName`, PFS.`label` as `status`, PU.`label` as idUser, BIN_TO_UUID(PF.`idFolder`) as idFolder, PFI.label as isPublic 
-                    FROM prs_folders PF 
-                    INNER JOIN prs_folders_ispublic PFI ON PFI.id = PF.isPublic
-                    INNER JOIN prs_users PU ON PU.id = PF.idUser
-                    INNER JOIN prs_folders_status PFS ON PFS.id = PF.status
-					WHERE PF.status = 1 AND PF.idUser = $userId";
+		}else{
+			$sql_stmt = "SELECT * FROM `view_prs_files` WHERE idUser = $userId";
+
 		} 
 		
+		// 			 $sql_stmt = "SELECT 
+//                     PF.`folderName`, PFS.`label` as `status`, PU.`label` as idUser, BIN_TO_UUID(PF.`idFolder`) as idFolder, PFI.label as isPublic 
+//                     FROM prs_folders PF 
+//                     INNER JOIN prs_folders_ispublic PFI ON PFI.id = PF.isPublic
+//                     INNER JOIN prs_users PU ON PU.id = PF.idUser
+//                     INNER JOIN prs_folders_status PFS ON PFS.id = PF.status
+// 					WHERE PF.status = 1 AND PF.idUser = $userId";
 					
         $stmt = $conn->prepare($sql_stmt);
         $stmt->execute();
-        $result = $stmt->fetchAll();
-		
-        foreach($result as $key=>$value) {
-            $isPublic = ($value['isPublic'] == 'Public') ? 'public/' : 'private/';
-            $userlogin = get_current_user_id().'/';
-            $folder = $value['folderName'].'/';
-            $path = $isPublic.$userlogin.$folder;
-            $objects = $s3->listObjects([
-                'Bucket' => AWS_S3_BUCKET,
-                'Prefix' => $path
-            ]);
-            $result[$key]['process'] = 0;
-            if (isset($objects['Contents'])) {
-                if (count($objects['Contents']) > 0) {
-                    $result[$key]['process'] = 1;
-                }
-            }
+         $records = $stmt->fetchAll();
+		$data = [];
+		foreach($records as $record) {
+			 
+			 $record['filesize'] = $record['filesize']/1073741824; 
+			 $data[] = $record;
+			
         }
-        wp_send_json_success( $result );
+        wp_send_json_success( $data );
     } catch (\Exception $ex) {
         $result['success'] = false;
         $result['data'] = [
@@ -780,13 +767,7 @@ function view_process_status_list() {
     $result['data'] = [
         'message' => 'Network error.',
     ];
- 	
-// 	$servername = get_option('wpawss3_host');
-// 	$username = get_option('wpawss3_username');
-// 	$password = get_option('wpawss3_password');
-//  $dbname = get_option('wpawss3_db_name');
-	
-	
+ 		
     $dbname = get_option('wpawss3_db_name');
 	$servername = "localhost:3306";
 	$username = 'wpDataTables';
@@ -824,33 +805,16 @@ function view_process_status_list() {
 		
         $stmt = $conn->prepare($sql_stmt);
         $stmt->execute();
-        $result = $stmt->fetchAll();
+        $records = $stmt->fetchAll();
+		$data = [];
+		foreach($records as $record) {
+			 
+			 $record['filesize'] = $record['filesize']/1073741824; 
+			 $data[] = $record;
+        }
 		
-// 		 foreach($result as $key=>$value) {
-//             $isPublic = ($value['isPublic'] == 'Public') ? 'public/' : 'private/';
-//             $userlogin = get_current_user_id().'/';
-//             $folder = $value['folderName'].'/';
-//             $path = $isPublic.$userlogin.$folder;
-//             $objects = $s3->listObjects([
-//                 'Bucket' => AWS_S3_BUCKET,
-//                 'Prefix' => $path
-//             ]);
-//             $result[$key]['process'] = 0;
-//             if (isset($objects['Contents'])) {
-//                 if (count($objects['Contents']) > 0) {
-//                     $result[$key]['process'] = 1;
-//                 }
-//             }
-//         }
-	
-// 		echo '<pre>';
-// 		print_r($result);
-// 		exit;
-		
-		
-		
-       
-        wp_send_json_success( $result );
+			
+        wp_send_json_success( $data );
     } catch (\Exception $ex) {
         $result['success'] = false;
         $result['data'] = [
