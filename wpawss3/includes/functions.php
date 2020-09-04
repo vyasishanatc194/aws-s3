@@ -258,7 +258,10 @@ function get_id_app_par() {
 				   if ($results = mysqli_store_result($MyConnection)) {
 					
 						  while ($row = mysqli_fetch_assoc($results)) {
-								$data[] = $row['idAppParSaf'];
+							  $rowdata = [];
+							  $rowdata['idAppParSaf'] =  $row['idAppParSaf'];
+							  $rowdata['label'] =  $row['label'];
+								$data[] = $rowdata;
 						  }
 						  mysqli_free_result($results);
 				   }
@@ -281,7 +284,10 @@ function get_id_app_par() {
 				   if ($results = mysqli_store_result($MyConnection)) {
 					
 						  while ($row = mysqli_fetch_assoc($results)) {
-								$data[] = $row['idAppParCmp'];
+							  $rowdata = [];
+							  $rowdata['idAppParCmp'] =  $row['idAppParCmp'];
+							  $rowdata['label'] =  $row['label'];
+							  $data[] = $rowdata;
 						  }
 						  mysqli_free_result($results);
 				   }
@@ -290,6 +296,32 @@ function get_id_app_par() {
 			$response['data']['message'] = '';
 			$response['idAppPar'] = $data;
 			$response['label'] = 'idAppParCmp';
+			$response['success'] = true;
+			wp_send_json_success($response);
+			mysqli_close($MyConnection);
+		}	
+	}
+	if($_POST['par_idApp'] == 4){
+		mysqli_multi_query($MyConnection, "CALL get_constants()");
+		if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_app_parameters_fede(@CRUD_READ , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)")) {
+		
+			while (mysqli_more_results($MyConnection)) {
+
+				   if ($results = mysqli_store_result($MyConnection)) {
+					
+						  while ($row = mysqli_fetch_assoc($results)) {
+							  $rowdata = [];
+							  $rowdata['idAppParFed'] =  $row['CRUD_prs_app_parameters_fede'];
+							  $rowdata['label'] =  $row['label'];
+							  $data[] = $rowdata;
+						  }
+						  mysqli_free_result($results);
+				   }
+				   mysqli_next_result($MyConnection);
+			}
+			$response['data']['message'] = '';
+			$response['idAppPar'] = $data;
+			$response['label'] = 'idAppParFed';
 			$response['success'] = true;
 			wp_send_json_success($response);
 			mysqli_close($MyConnection);

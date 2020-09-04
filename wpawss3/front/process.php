@@ -67,6 +67,12 @@ function wpawss3_process() {
 					    <?php _e('COMP', 'COMP')?>
 					  </label>
 					</div>
+					<div class="form-check">
+					  <input class="form-check-input select_app" type="radio"  name="select_app" value="4" id="select_app2">
+					  <label class="form-check-label" for="select_app2">
+					    <?php _e('FEDE', 'FEDE')?>
+					  </label>
+					</div>
 	            </div>
 	            <div class="form-group select_idAppPar">
 	            	<label for="idAppPar"><?php _e('IdAppPar', 'IdAppPar')?></label>
@@ -252,13 +258,28 @@ function wpawss3_process() {
             },
             beforeSend: function() {},
             success: function( result, xhr ) {
-				if (result.data.success) {	
+            	if (result.data.success) {	
+            		
+            		if(par_idApp == 2){
 					
-					$.each(result.data.idAppPar, function(i, item) {
-						
-						html += "<option value='"+item+"'>"+item+"</option>";					
-					});
-				}
+						$.each(result.data.idAppPar, function(i, item) {
+							
+							html += "<option value='"+item.idAppParSaf+"'>"+item.label+"</option>";					
+						});
+					}else if(par_idApp == 3){
+
+						$.each(result.data.idAppPar, function(i, item) {
+							
+							html += "<option value='"+item.idAppParCmp+"'>"+item.label+"</option>";					
+						});
+					}else{
+						$.each(result.data.idAppPar, function(i, item) {
+							
+							html += "<option value='"+item.idAppParFed+"'>"+item.label+"</option>";					
+						});
+					}
+            	}
+				
 				jQuery("#idAppPar").html(html);
 				jQuery(".select_idAppPar label").text(result.data.label);
 					
