@@ -380,15 +380,33 @@ function store_process() {
 			
 			if(mysqli_multi_query($MyConnection, "CALL prs_app_file('".$filehas."', $idAppPar, $par_idApp, $userId, '".$comment."')")) {
 				
+				
+				while (mysqli_more_results($MyConnection)) {
+
+					   if ($results = mysqli_store_result($MyConnection)) {
+
+							  while ($row = mysqli_fetch_assoc($results)) {
+								 
+									$data[] = $row;
+							  }
+							  mysqli_free_result($results);
+					   }
+					   mysqli_next_result($MyConnection);
+				}
+				
+				
 				$result['success'] = true;
-				$result['data'] = [
-					'message' => 'File processed Successfully.',
-				];
+				$result['data'] = $data;
+// 				$result['data'] = [
+// 					'message' => 'File processed Successfully.',
+// 				];
 				wp_send_json_success( $result );
 				mysqli_close($MyConnection);
 			}else{
 				 $result['success'] = false;
-        		 $result['message'] = mysqli_error($MyConnection);
+        		 $result['data'] = [
+					'message' => mysqli_error($MyConnection)
+				];
 				 wp_send_json_error( $result );
         
 			}
@@ -407,15 +425,34 @@ function store_process() {
 // 			}
 			
 			if(mysqli_multi_query($MyConnection, "CALL prs_app_folder('".$folderhas."', $idAppPar, $par_idApp, $userId,  '".$comment."')")) {
+				
+				while (mysqli_more_results($MyConnection)) {
+
+					   if ($results = mysqli_store_result($MyConnection)) {
+
+							  while ($row = mysqli_fetch_assoc($results)) {
+								 
+									$data[] = $row;
+							  }
+							  mysqli_free_result($results);
+					   }
+					   mysqli_next_result($MyConnection);
+				}
+				
+				
+				
 				$result['success'] = true;
-				$result['data'] = [
-					'message' => 'Folder processed Successfully.',
-				];
+// 				$result['data'] = [
+// 					'message' => 'Folder processed Successfully.',
+// 				];
+ 				$result['data'] = $data;
 				wp_send_json_success( $result );
 				mysqli_close($MyConnection);
 			}else{
 				 $result['success'] = false;
-        		 $result['message'] = mysqli_error($MyConnection);
+        		 $result['data'] = [
+					'message' => mysqli_error($MyConnection)
+				];
 				 wp_send_json_error( $result );
         
 			}

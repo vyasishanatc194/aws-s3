@@ -316,7 +316,19 @@ function wpawss3_process() {
             beforeSend: function() {},
             success: function( result, xhr ) {
 				if (result.data.success) {	
-					toastr.success(result.data.data.message);
+
+					$.each(result.data.data, function(i, item) {
+						if(item.STATUS == "SUCCESS"){
+							toastr.success(item.filename+" "+item.MESSAGE);
+						}
+						if(item.STATUS == "ERROR"){
+							toastr.error(item.filename+" "+item.MESSAGE);
+						}
+						console.log(item.MESSAGE);
+					});
+					
+
+					//toastr.success(result.data.data.message);
 				}else{
 					toastr.error(result.data.data.message);
 				}
