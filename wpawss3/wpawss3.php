@@ -103,5 +103,8 @@ require_once WPS3_PLUGIN_DIR . '/front/folder-list.php';
 require_once WPS3_PLUGIN_DIR . '/front/process.php';
 require_once WPS3_PLUGIN_DIR . '/front/process-status.php';
 require_once WPS3_PLUGIN_DIR . '/front/view-process-status.php';
+require_once WPS3_PLUGIN_DIR . '/front/view_error_reports_processes.php';
+require_once WPS3_PLUGIN_DIR . '/front/view_error_reports_files.php';
+require_once WPS3_PLUGIN_DIR . '/front/view_completed_reports_files.php';
 require_once WPS3_PLUGIN_DIR . '/front/add-meta.php';
 require_once WPS3_PLUGIN_DIR . '/classes/magicWP.php';
