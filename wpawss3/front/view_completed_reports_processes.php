@@ -1,5 +1,5 @@
 <?php
-function wpawss3_view_error_reports_process() {
+function wpawss3_view_completed_reports_process() {
     if ( is_admin()){
         return;
     }
@@ -92,7 +92,7 @@ function wpawss3_view_error_reports_process() {
         var table = $('#faq_table').DataTable( {
 			"processing": true,
             ajax: {
-                url: pw1_script_vars.ajaxurl + '?action=view_error_process_list&security='+pw1_script_vars.security
+                url: pw1_script_vars.ajaxurl + '?action=view_completed_process_list&security='+pw1_script_vars.security
             },
             columns: [
                 { data: 'filename'},
@@ -115,5 +115,5 @@ function wpawss3_view_error_reports_process() {
 </script>
 <?php
 }
-add_shortcode('wpawss3viewerrorreportsprocess', 'wpawss3_view_error_reports_process');
+add_shortcode('wpawss3viewcompletedreportsprocess', 'wpawss3_view_completed_reports_process');
 ?>

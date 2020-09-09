@@ -994,10 +994,10 @@ function view_error_files_list() {
 		
 		if( array_intersect($allowed_roles, $user->roles ) ) {  
 			
-		   $sql_stmt = "SELECT * FROM `view_prs_files` WHERE StatusLabel = 'Error' ";
+		   $sql_stmt = "SELECT * FROM `view_prs_files` WHERE status = 5 ";
 			
 		}else{
-			$sql_stmt = "SELECT * FROM `view_prs_files` WHERE StatusLabel = 'Error' AND idUser = $userId";
+			$sql_stmt = "SELECT * FROM `view_prs_files` WHERE status = 5 AND idUser = $userId";
 
 		} 					
         $stmt = $conn->prepare($sql_stmt);
@@ -1097,3 +1097,72 @@ function view_completed_files_list() {
 }
 add_action('wp_ajax_view_completed_files_list', 'view_completed_files_list');
 add_action('wp_ajax_nopriv_view_completed_files_list', 'view_completed_files_list');
+
+
+
+function view_completed_process_list() {
+    check_ajax_referer('wpawss3', 'security');
+    $result['success'] = false;
+    $result['data'] = [
+        'message' => 'Network error.',
+    ];
+ 		
+    $dbname = get_option('wpawss3_db_name');
+	$servername = "localhost:3306";
+	$username = 'wpDataTables';
+	$password = 'd903kdas;l390-f$jki43 i-0233kd023;% IKO3($*#kjdl';
+
+    try {
+        $conn = new PDO("mysql:host=$servername;dbname=processing", $username, $password);
+		
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		try {
+            $s3 = new S3Client([
+                'version' => get_option('wpawss3_aws_version'),
+				'region'  => get_option('wpawss3_aws_region'),
+				'credentials' => [
+					'key'    => get_option('wpawss3_aws_key'),
+					'secret' => get_option('wpawss3_aws_secret_key')
+				]
+            ]);
+        } catch (\Exception $e) {
+            echo $e->getMessage() . PHP_EOL; 
+        }
+		
+		if( is_user_logged_in() ) {
+			$userId = get_current_user_id();
+		}
+		
+		$user = wp_get_current_user();
+		$allowed_roles = array('administrator');
+		if( array_intersect($allowed_roles, $user->roles ) ) {  
+		   $sql_stmt = "SELECT * FROM `view_prs_app_process` WHERE status = 4";
+		}else{
+			$sql_stmt = "SELECT * FROM `view_prs_app_process` WHERE status = 4 AND idUser = $userId";
+		} 
+		
+        $stmt = $conn->prepare($sql_stmt);
+        $stmt->execute();
+        $records = $stmt->fetchAll();
+		$data = [];
+		foreach($records as $record) {
+			 
+			 $record['filesize'] = $record['filesize']/1073741824; 
+			 $data[] = $record;
+        }
+		
+			
+        wp_send_json_success( $data );
+    } catch (\Exception $ex) {
+        $result['success'] = false;
+        $result['data'] = [
+            'message' => $ex->getMessage(),
+        ];
+        wp_send_json_error( $result );
+    }
+    
+    wp_send_json_error( $result );
+    die();
+}
+add_action('wp_ajax_view_completed_process_list', 'view_completed_process_list');
+add_action('wp_ajax_nopriv_view_completed_process_list', 'view_completed_process_list');

@@ -56,10 +56,12 @@ function wpawss3_view_process_status() {
                     <th>APP Label</th>
                     <th>APP Par Label</th>
                     <th>File Size</th>
+                    <th>Total Time</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
+                    <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -103,7 +105,7 @@ function wpawss3_view_process_status() {
                 { data: 'AppLabel' },
                 { data: 'AppParLabel' },
                 { data: 'filesize' },
-                
+                { data: 'total_time' },
 				
             ],
             order: [[ 0, "desc" ]]
