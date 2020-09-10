@@ -56,6 +56,7 @@ function wpawss3_register_settings() {
     register_setting( 'wpawss3_options_group', 'wpawss3_s3_page_link', 'wpawss3_callback' );
  }
  add_action( 'admin_init', 'wpawss3_register_settings' );
+add_role( "uploader", "Uploader", array('read' => true, 'edit_posts'   => true));
 
 // function register_stylesheet() {
 //     // if ( is_admin() ) {

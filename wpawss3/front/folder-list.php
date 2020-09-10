@@ -3,6 +3,17 @@ function wpawss3_listing() {
     if ( is_admin()){
         return;
     }
+
+
+    $user = wp_get_current_user();
+    $allowed_roles = array('administrator','uploader');
+        
+    if( array_intersect($allowed_roles, $user->roles ) ) {  
+        
+       $sql_stmt = "SELECT * FROM `view_prs_files`";
+        
+     
+
 ?>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap.min.css">    
@@ -171,6 +182,13 @@ function wpawss3_listing() {
     });
 </script>
 <?php
+
+}else{ ?>
+
+<p>You don't have access to view this page.</p>
+<?php 
+}
+
 }
 add_shortcode('wpawss3listing', 'wpawss3_listing');
 ?>

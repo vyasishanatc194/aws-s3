@@ -39,10 +39,20 @@ class magicWP {
 	
 	static function getAllFolderDB($bucket, $prefix) {
 		
-		$userId = 1;
 		if( is_user_logged_in() ) {
 			$userId = get_current_user_id();
         }
+		
+		
+		$user = wp_get_current_user();
+		$allowed_roles = array('administrator');
+		
+		if( array_intersect($allowed_roles, $user->roles ) ) {  
+			$par_idUser = "@PAR_NONE";	
+		}else{
+			$par_idUser = $userId;
+		} 
+		
 		
 		$servername = get_option('wpawss3_host');
         $username = get_option('wpawss3_username');
@@ -51,13 +61,12 @@ class magicWP {
 		
 		$MyConnection = new mysqli($servername, $username, $password, $dbname, 3306);
 		
-		$par_idUser = $userId;
+		
         $data = [];
 		mysqli_multi_query($MyConnection, "CALL get_constants()");
 		
 	    if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_folders(@CRUD_READ, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE, $par_idUser, @FOLDER_STATUS_COMPLETED  , @PAR_NONE)")) {
 			
-	//	if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_folders(@CRUD_READ, @PAR_NONE, @PAR_NONE, @PAR_NONE, @PAR_NONE, $par_idUser, @FOLDER_STATUS_FILE_UPLOAD  , @PAR_NONE)")) {
 		
 			while (mysqli_more_results($MyConnection)) {
 
