@@ -187,8 +187,7 @@ class AwsS3WP {
         }
         $s3 = AwsS3WP::connect();
         try {
-            // $file_name = 'testFile.txt';
-
+           
             $result = $s3->deleteObject([
                 'Bucket' => $bucket,
                 'Key'    => $folder_name.$file_name,

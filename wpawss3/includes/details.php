@@ -1,5 +1,4 @@
 <?php
-
 function wpawss3_shortcodes() {
     echo '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">';
     ?>
@@ -15,7 +14,6 @@ function wpawss3_shortcodes() {
                 <td>[wpawss3-service]</td>
             </tr>
         </table>
-
     </div>
     <?php
 }

@@ -11,18 +11,10 @@ function records_list() {
     $result['data'] = [
         'message' => 'Network error.',
     ];
- 	
-// 	$servername = get_option('wpawss3_host');
-// 	$username = get_option('wpawss3_username');
-// 	$password = get_option('wpawss3_password');
-//  $dbname = get_option('wpawss3_db_name');
-	
-	
     $dbname = get_option('wpawss3_db_name');
 	$servername = "localhost:3306";
 	$username = 'wpDataTables';
 	$password = 'd903kdas;l390-f$jki43 i-0233kd023;% IKO3($*#kjdl';
-
     try {
         $conn = new PDO("mysql:host=$servername;dbname=processing", $username, $password);
 		
@@ -39,14 +31,11 @@ function records_list() {
         } catch (\Exception $e) {
             echo $e->getMessage() . PHP_EOL; 
         }
-		
 		$userId = 1;
 		if( is_user_logged_in() ) {
 			$userId = get_current_user_id();
 		}
-		
-        // set the PDO error mode to exception
-        $sql_stmt = "SELECT 
+		$sql_stmt = "SELECT 
                     PF.`folderName`, PFS.`label` as `status`, PU.`label` as idUser, BIN_TO_UUID(PF.`idFolder`) as idFolder, PFI.label as isPublic 
                     FROM prs_folders PF 
                     INNER JOIN prs_folders_ispublic PFI ON PFI.id = PF.isPublic
@@ -57,7 +46,6 @@ function records_list() {
         $stmt = $conn->prepare($sql_stmt);
         $stmt->execute();
         $result = $stmt->fetchAll();
-		
         foreach($result as $key=>$value) {
             $isPublic = ($value['isPublic'] == 'Public') ? 'public/' : 'private/';
             $userlogin = get_current_user_id().'/';
@@ -82,7 +70,6 @@ function records_list() {
         ];
         wp_send_json_error( $result );
     }
-    
     wp_send_json_error( $result );
     die();
 }
@@ -153,7 +140,6 @@ function magic_funcs() {
 		$bucket = $_POST['wpawss3_bucket'];
 		$desti = $_POST['wpawss3_desti'];
         $response = MagicWP::getAllFolderCB($bucket, $desti);
-//         print_r($response);
 		$arr = [];
 		if ($response) {
             $response['success'] = true;
@@ -163,13 +149,11 @@ function magic_funcs() {
 		}
 		die;
 	}
-	
 	wp_send_json_error( $result );
 }
 
 add_action('wp_ajax_magic_funcs', 'magic_funcs');
 add_action('wp_ajax_nopriv_magic_funcs', 'magic_funcs');
-
 
 function create_folder() {
     check_ajax_referer('wpawss3', 'security');
@@ -303,17 +287,14 @@ function get_id_app_par() {
 	}
 	if($_POST['par_idApp'] == 4){
 		mysqli_multi_query($MyConnection, "CALL get_constants()");
-		if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_app_parameters_fede(@CRUD_READ , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)")) {
+		if(mysqli_multi_query($MyConnection, "CALL CRUD_prs_app_parameters_fede(@CRUD_READ , NULL, NULL, NULL, NULL, NULL, NULL)")) {
 		
 			while (mysqli_more_results($MyConnection)) {
 
 				   if ($results = mysqli_store_result($MyConnection)) {
 					
 						  while ($row = mysqli_fetch_assoc($results)) {
-							  $rowdata = [];
-							  $rowdata['idAppParFed'] =  $row['CRUD_prs_app_parameters_fede'];
-							  $rowdata['label'] =  $row['label'];
-							  $data[] = $rowdata;
+							  $data[] = $row;
 						  }
 						  mysqli_free_result($results);
 				   }
@@ -334,7 +315,6 @@ add_action('wp_ajax_get_id_app_par', 'get_id_app_par');
 add_action('wp_ajax_nopriv_get_id_app_par', 'get_id_app_par');
 
 // Store process 
-
 function store_process() {
 	check_ajax_referer('wpawss3', 'security');
 	
@@ -367,17 +347,6 @@ function store_process() {
 	
 		if($process_radio == 'process_file'){
 			
-// 			$output = shell_exec("sh /home/Actions/Actions.sh --action 2 --idFile '".$filehas."' --idAppPar $idAppPar --idApp $par_idApp --idUser $userId --label '".$comment."'");
-// 			if($output){
-// 				$result['success'] = true;
-// 				$result['data'] = [
-// 					'message' => $output,
-// 				];
-// 				wp_send_json_success($result);
-// 			}else{
-// 				wp_send_json_error($result);
-// 			}
-			
 			if(mysqli_multi_query($MyConnection, "CALL prs_app_file('".$filehas."', $idAppPar, $par_idApp, $userId, '".$comment."')")) {
 				
 				
@@ -394,12 +363,9 @@ function store_process() {
 					   mysqli_next_result($MyConnection);
 				}
 				
-				
 				$result['success'] = true;
 				$result['data'] = $data;
-// 				$result['data'] = [
-// 					'message' => 'File processed Successfully.',
-// 				];
+
 				wp_send_json_success( $result );
 				mysqli_close($MyConnection);
 			}else{
@@ -412,17 +378,6 @@ function store_process() {
 			}
 
 		}else if($process_radio == 'process_folder'){
-			
-// 			$output = shell_exec("sh /home/Actions/Actions.sh --action 3 --idFolder '".$folderhas."' --idAppPar $idAppPar --idApp $par_idApp --idUser $userId --label '".$comment."'");
-// 			if($output){
-// 				$result['success'] = true;
-// 				$result['data'] = [
-// 					'message' => $output,
-// 				];
-// 				wp_send_json_success($result);
-// 			}else{
-// 				wp_send_json_error($result);
-// 			}
 			
 			if(mysqli_multi_query($MyConnection, "CALL prs_app_folder('".$folderhas."', $idAppPar, $par_idApp, $userId,  '".$comment."')")) {
 				
@@ -439,12 +394,7 @@ function store_process() {
 					   mysqli_next_result($MyConnection);
 				}
 				
-				
-				
 				$result['success'] = true;
-// 				$result['data'] = [
-// 					'message' => 'Folder processed Successfully.',
-// 				];
  				$result['data'] = $data;
 				wp_send_json_success( $result );
 				mysqli_close($MyConnection);
@@ -506,13 +456,10 @@ function add_meta_for_existing_swath() {
 add_action('wp_ajax_add_meta_for_existing_swath', 'add_meta_for_existing_swath');
 add_action('wp_ajax_nopriv_add_meta_for_existing_swath', 'add_meta_for_existing_swath');
 
-
-
 function add_meta_for_new_swath() {
 	check_ajax_referer('wpawss3', 'security');
 	
 	$result = [];
-	// default response
 	$result['success'] = false;
 	$result['data'] = [
 		'message' => 'Network error.',
@@ -521,15 +468,13 @@ function add_meta_for_new_swath() {
 	$folderhas = $_POST['folderhas'];
 	$par_idFile = $_POST['filehas'];
 	$par_mode = $_POST['mode'];
-	$par_isSwath = $_POST['par_isSwath'];
-	
+	$par_isSwath = $_POST['par_isSwath'];	
 	$par_expIndex = $_POST['par_expIndex'];
 	$par_startMass = $_POST['par_startMass'];
 	$par_stopMass = $_POST['par_stopMass'];
 	$par_ces = $_POST['par_ces'];
 	
 	$j = count($par_expIndex);
- 	
 	$servername = get_option('wpawss3_host');
 	$username = get_option('wpawss3_username');
 	$password = get_option('wpawss3_password');
@@ -539,7 +484,6 @@ function add_meta_for_new_swath() {
 	mysqli_multi_query($MyConnection, "CALL get_constants()");
 	
 	$idSwath = NULL;
-	
 	for ($i = 0; $i <= $j-1; $i++) {
 	  	if($i == 0){
 				
@@ -714,33 +658,11 @@ function process_ajax() {
 		}
 
 		wp_send_json_error( $result );
-		
-		
-		
-// 		$output = shell_exec('sh /home/Actions/Actions.sh --action 1 --idFolder '.$hrefVal);
-// 		if($output){
-// 			$result['success'] = true;
-// 			$result['data'] = $output;
-// 			wp_send_json_success($result);
-// 		}else{
-// 			wp_send_json_error($result);
-// 		}
-// 		echo "<pre>$output</pre>";
-		
-// 		$cmd = 'python3 /home/Action/Actions.py --action PROCESS_FOLDER --idFolder '.$hrefVal;
-// 		if ($response['success']) {
-// 			$response['data'] = $output;
-// 			wp_send_json_success($response);
-// 		} else {
-// 			wp_send_json_error($response['msg']);
-// 		}
 		die;
 	}
 }
 add_action('wp_ajax_process_ajax', 'process_ajax');
 add_action('wp_ajax_nopriv_process_ajax', 'process_ajax');
-
-
 
 function upload_status_list() {
     check_ajax_referer('wpawss3', 'security');
@@ -812,9 +734,6 @@ function upload_status_list() {
 }
 add_action('wp_ajax_upload_status_list', 'upload_status_list');
 add_action('wp_ajax_nopriv_upload_status_list', 'upload_status_list');
-
-
-
 
 function view_process_status_list() {
     check_ajax_referer('wpawss3', 'security');
@@ -1025,8 +944,6 @@ function view_error_files_list() {
 add_action('wp_ajax_view_error_files_list', 'view_error_files_list');
 add_action('wp_ajax_nopriv_view_error_files_list', 'view_error_files_list');
 
-
-
 function view_completed_files_list() {
     check_ajax_referer('wpawss3', 'security');
     $result['success'] = false;
@@ -1034,7 +951,6 @@ function view_completed_files_list() {
         'message' => 'Network error.',
     ];
  
-	
     $dbname = get_option('wpawss3_db_name');
 	$servername = "localhost:3306";
 	$username = 'wpDataTables';
@@ -1145,13 +1061,10 @@ function view_completed_process_list() {
         $stmt->execute();
         $records = $stmt->fetchAll();
 		$data = [];
-		foreach($records as $record) {
-			 
+		foreach($records as $record) {	 
 			 $record['filesize'] = $record['filesize']/1073741824; 
 			 $data[] = $record;
         }
-		
-			
         wp_send_json_success( $data );
     } catch (\Exception $ex) {
         $result['success'] = false;

@@ -25,7 +25,6 @@ function wpawss3_options_page() {
                 <td><input type="password" id="wpawss3_password" name="wpawss3_password" class="col-md-10" value="<?php echo get_option('wpawss3_password'); ?>" /></td>
             </tr>
         </table>
-
         <hr/><h3>AWS Settings</h3><hr/>
         <table class="col-md-10">
             <tr valign="top" class="col-md-12">

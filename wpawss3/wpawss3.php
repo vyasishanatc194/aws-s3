@@ -10,19 +10,11 @@
 */
 
 define( 'WPS3_VERSION', '1.0' );
-
 define( 'WPS3_REQUIRED_WP_VERSION', '4.9' );
-
 define( 'WPS3_PLUGIN', __FILE__ );
-
 define( 'WPS3_PLUGIN_BASENAME', plugin_basename( WPS3_PLUGIN ) );
-
 define( 'WPS3_PLUGIN_NAME', trim( dirname( WPS3_PLUGIN_BASENAME ), '/' ) );
-
 define( 'WPS3_PLUGIN_DIR', untrailingslashit( dirname( WPS3_PLUGIN ) ) );
-
-
-// register_activation_hook(__FILE__, 'wps3_records_modifymenu');
 
 add_action('admin_menu','wps3_records_modifymenu');
 
@@ -55,37 +47,8 @@ function wpawss3_register_settings() {
     register_setting( 'wpawss3_options_group', 'wpawss3_identity_pool_id', 'wpawss3_callback' );
     register_setting( 'wpawss3_options_group', 'wpawss3_s3_page_link', 'wpawss3_callback' );
  }
- add_action( 'admin_init', 'wpawss3_register_settings' );
+add_action( 'admin_init', 'wpawss3_register_settings' );
 add_role( "uploader", "Uploader", array('read' => true, 'edit_posts'   => true));
-
-// function register_stylesheet() {
-//     // if ( is_admin() ) {
-//         wp_enqueue_style( 'wpawss3-style', plugins_url( '/assets/css/bootstrap.min.css', __FILE__ ) );
-//         wp_enqueue_style( 'wpawss3-style1', plugins_url( '/assets/css/dataTables.bootstrap4.min.css', __FILE__ ) );
-//         wp_enqueue_style( 'wpawss3-style2', plugins_url( '/assets/css/toastr.min.css', __FILE__ ) );
-//         wp_enqueue_style( 'wpawss3-style3', 'https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css' );
-//         wp_enqueue_style( 'wpawss3-style4', plugins_url( '/assets/css/editor.dataTables.min.css', __FILE__ ) );
-//         wp_enqueue_style( 'wpawss3-style5', plugins_url( '/assets/css/font-awesome.min.css', __FILE__ ) );
-//         wp_enqueue_style( 'wpawss3-style6', plugins_url( '/assets/css/style.css', __FILE__ ) );
-//     // }
-// }
-// add_action('wp_enqueue_scripts', 'register_stylesheet');
-
-// function register_script() {
-//     // if ( is_admin() ) {
-//         wp_enqueue_script( 'wpawss3-script', plugin_dir_url( __FILE__ ) . '/assets/js/popper.min.js' );
-//         // wp_enqueue_script( 'wpawss3-script1', plugins_url( '/assets/js/bootstrap.min.js', __FILE__ ) );
-//         wp_enqueue_script( 'wpawss3-script2', plugin_dir_url( __FILE__ ) . '/assets/js/toastr.min.js' );
-//         wp_enqueue_script( 'wpawss3-script3', 'https://code.jquery.com/jquery-3.5.1.js', array('jQuery') );
-//         wp_enqueue_script( 'wpawss3-script4', 'https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js', array('jQuery') );
-//         wp_enqueue_script( 'wpawss3-script5', 'https://cdn.datatables.net/buttons/1.6.2/js/dataTables.buttons.min.j', array('jQuery') );
-//         wp_enqueue_script( 'wpawss3-script6', 'https://cdn.datatables.net/select/1.3.1/js/dataTables.select.min.js', array('jQuery') );
-//         wp_enqueue_script( 'wpawss3-script7', 'https://editor.datatables.net/extensions/Editor/js/dataTables.editor.min.js', array('jQuery') );
-//         wp_enqueue_script( 'wpawss3-script8', plugins_url( '/assets/js/main.js', __FILE__ ) );
-//     // }
-// }
-// add_action('wp_enqueue_scripts', 'register_script');
-
 
 function wpawss3_ajax_load_scripts() {
     wp_enqueue_script('wpawss3-script1', 'https://code.jquery.com/jquery-3.5.1.js', array('jquery'));

@@ -82,7 +82,6 @@ class magicWP {
 			
 			$result['data'] = $data;
 		
-			//wp_send_json_success( $result );
 			mysqli_close($MyConnection);
 		}		
 	 return $result;
@@ -98,9 +97,7 @@ class magicWP {
 		if( is_user_logged_in() ) {
 			$userId = get_current_user_id();
         }
-		
-		//$folderhas = '9a2eba77-d70a-11ea-a3ac-0ef030544d11';
-		
+			
 		$servername = get_option('wpawss3_host');
         $username = get_option('wpawss3_username');
         $password = get_option('wpawss3_password');
